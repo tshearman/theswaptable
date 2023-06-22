@@ -1,0 +1,41 @@
+version: "3"
+services:
+
+  api:
+    build: ./backend/
+    ports:
+      - "8000:8000"
+    depends_on:
+      - 'db'
+    secrets:
+      - postgres_user
+      - postgres_password
+      - postgres_db
+      - postgres_host
+      - postgres_port
+
+  db:
+    image: "postgres:15"
+    container_name: "postgres"
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB_FILE: /run/secrets/postgres_db
+    volumes:
+      - ./postgres/initialize.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    secrets:
+      - postgres_user
+      - postgres_password
+      - postgres_db
+
+secrets:
+  postgres_user:
+    file: ./secrets/postgres_user
+  postgres_password:
+    file: ./secrets/postgres_password
+  postgres_db:
+    file: ./secrets/postgres_db
+  postgres_host:
+    file: ./secrets/postgres_host
+  postgres_port:
+    file: ./secrets/postgres_port
