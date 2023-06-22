@@ -1,8 +1,9 @@
-from db.utils import add_many
-from db.voting import remove_vote_for, vote_for, count_votes
-from initialize.prod import initialize_tables, get_engine
-from model import ItemType, User, Item, Vote
-from model import ItemTypeId
+from backend.db.utils import add_many
+from backend.db.voting import remove_vote_for, vote_for, count_votes
+from backend.db.items import lookup_item
+from backend.initialize.prod import initialize_tables, get_engine
+from backend.model import ItemType, User, Item, Vote
+from backend.model import ItemTypeId
 from datetime import datetime
 import uuid
 
@@ -136,3 +137,7 @@ if __name__ == "__main__":
         item_ids["Connecticut Yankee in King Arthur's Court"], user_ids["Mark Twain"], e
     )
     assert count_votes(item_ids["Connecticut Yankee in King Arthur's Court"], e) == 0
+
+    for item in item_ids:
+        assert lookup_item(item_ids[item], e) is not None
+    assert lookup_item(uuid.uuid4(), e) is None

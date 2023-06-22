@@ -1,7 +1,9 @@
 from fastapi import FastAPI
-from db.users import add_user
-from db.voting import remove_vote_for, vote_for, count_votes
-from initialize.prod import get_engine
+from backend.db.users import add_user
+from backend.db.items import lookup_item
+from backend.db.voting import remove_vote_for, vote_for, count_votes
+from backend.initialize.prod import get_engine
+from pydantic import UUID4, EmailStr
 
 app = FastAPI()
 
@@ -12,25 +14,25 @@ async def root():
 
 
 @app.get("/items/{item_id}")
-async def read_item(item_id: str):
-    return {"item_id": item_id}
+async def read_item(item_id: UUID4):
+    return lookup_item(item_id, get_engine())
 
 
 @app.get("/votes/{item_id}")
-async def read_votes(item_id: str):
+async def read_votes(item_id: UUID4):
     return count_votes(item_id, get_engine())
 
 
-@app.put("/vote-for/{item_id}/{user_id}")
-async def cast_vote_for(item_id: str, user_id: str) -> bool:
+@app.put("/vote-for/{item_id}/{user_id}", response_model=bool)
+async def cast_vote_for(item_id: UUID4, user_id: UUID4) -> bool:
     return vote_for(item_id, user_id, get_engine())
 
 
-@app.put("/unvote-for/{item_id}/{user_id}")
-async def cast_vote_for(item_id: str, user_id: str) -> bool:
+@app.put("/remove-vote-for/{item_id}/{user_id}", response_model=bool)
+async def cast_vote_for(item_id: UUID4, user_id: UUID4) -> bool:
     return remove_vote_for(item_id, user_id, get_engine())
 
 
-@app.put("/new-user/")
-async def add_new_user(name: str, email: str, token: str) -> bool:
+@app.put("/add-user/")
+async def add_new_user(name: str, email: EmailStr, token: str) -> bool:
     return add_user(name, email, token, get_engine())

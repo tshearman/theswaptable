@@ -1,9 +1,9 @@
 from datetime import datetime
 import uuid
 from enum import Enum
-from pydantic import UUID4, FileUrl, constr
+from pydantic import UUID4, EmailStr, FileUrl, constr
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, Session
 
 
 class ItemTypeId(Enum):
@@ -22,7 +22,7 @@ class ItemType(SQLModel, table=True):
 class User(SQLModel, table=True):
     __tablename__ = "users"
     name: str
-    email: str
+    email: EmailStr
     token: str
     id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
     create_ts: datetime = Field(default_factory=datetime.now)
@@ -60,3 +60,7 @@ class Vote(SQLModel, table=True):
 
 def initialize_tables(engine):
     SQLModel.metadata.create_all(engine)
+
+
+def drop_all_tables(engine):
+    SQLModel.metadata.drop_all(engine)

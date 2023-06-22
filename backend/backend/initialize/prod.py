@@ -1,5 +1,5 @@
-from db.utils import generate_engine
-from model import initialize_tables
+from backend.db.utils import generate_engine
+from backend.model import initialize_tables
 from utils import read_secret
 
 
@@ -10,7 +10,7 @@ def get_engine():
     user = read_secret("postgres_user")
     pw = read_secret("postgres_password")
     schema = "curios"
-    return generate_engine(host, port, db, user, pw, schema)
+    return generate_engine(host, port, db, user, pw, schema, echo=True)
 
 
 def init():

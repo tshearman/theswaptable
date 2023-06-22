@@ -1,10 +1,13 @@
 FROM python:3.11
 RUN mkdir /app 
-COPY /backend/ /app/
+RUN mkdir /app/backend
+RUN mkdir /app/tests
+COPY /backend/ /app/backend/
+COPY /tests/ /app/tests/
 COPY pyproject.toml /app
 EXPOSE 8000
 WORKDIR /app
-ENV PYTHONPATH=${PYTHONPATH}:/app
+ENV PYTHONPATH=${PYTHONPATH}:/app:/app/backend
 RUN pip3 install poetry
 RUN poetry config virtualenvs.create false
 RUN poetry install

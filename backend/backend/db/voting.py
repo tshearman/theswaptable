@@ -1,5 +1,5 @@
-from model import Vote
-from db.utils import add_single
+from backend.model import Vote
+from backend.db.utils import add_single
 from sqlmodel import select, func, and_, Session
 from pydantic import UUID4
 

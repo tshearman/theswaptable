@@ -1,6 +1,8 @@
-from model import Item
-from db.utils import add_single
+from pydantic import UUID4
+from sqlmodel import select, Session
+from backend.model import Item
 
 
-def update_item(item_type: int, user_id: str, title: str, description: str = None):
-    pass
+def lookup_item(item_id: UUID4, engine) -> Item | None:
+    with Session(engine) as session:
+        return session.execute(select(Item).where(Item.id == item_id)).first()
