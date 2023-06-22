@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from backend.db.users import add_user
 from backend.db.items import lookup_item
 from backend.db.voting import remove_vote_for, vote_for, count_votes
-from backend.initialize.prod import get_engine
+from backend.utils import get_engine
 from pydantic import UUID4, EmailStr
 
 app = FastAPI()

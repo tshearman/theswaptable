@@ -1,6 +1,6 @@
 import uuid
 from backend.db.utils import add_many, count, truncate
-from backend.initialize.prod import get_engine
+from backend.utils import get_engine
 from backend.db.voting import *
 
 from backend.model import *

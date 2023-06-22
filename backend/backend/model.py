@@ -2,8 +2,7 @@ from datetime import datetime
 import uuid
 from enum import Enum
 from pydantic import UUID4, EmailStr, FileUrl, constr
-
-from sqlmodel import Field, SQLModel, Session
+from sqlmodel import Field, SQLModel
 
 
 class ItemTypeId(Enum):
