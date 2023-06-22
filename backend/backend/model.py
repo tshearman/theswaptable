@@ -1,79 +1,62 @@
 from datetime import datetime
-from typing import List
 import uuid
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import registry
-from sqlalchemy.sql import func
+from enum import Enum
+from pydantic import UUID4, FileUrl, constr
+
+from sqlmodel import Field, SQLModel
 
 
-reg = registry()
+class ItemTypeId(Enum):
+    GENERIC = 0
+    BOOK = 1
+    MODEL = 2
 
 
-@reg.mapped_as_dataclass
-class ItemType:
-    __tablename__ = "dim_item_types"
-    id: Mapped[int] = mapped_column(primary_key=True, nullable=False, unique=True)
-    name: Mapped[str] = mapped_column(nullable=False, unique=True)
-    lookup_table: Mapped[str] = mapped_column(nullable=False)
-    create_ts: Mapped[datetime] = mapped_column(
-        server_default=func.now(), nullable=False, default=datetime.now()
-    )
+class ItemType(SQLModel, table=True):
+    __tablename__ = "dim_itemtypes"
+    lookup_table: str
+    id: ItemTypeId = Field(default=ItemTypeId.GENERIC, primary_key=True)
+    create_ts: datetime = Field(default_factory=datetime.now)
 
 
-@reg.mapped_as_dataclass
-class User:
+class User(SQLModel, table=True):
     __tablename__ = "users"
-    name: Mapped[str] = mapped_column(nullable=False)
-    email: Mapped[str] = mapped_column(nullable=False)
-    token: Mapped[str] = mapped_column(nullable=False)
-    id: Mapped[str] = mapped_column(
-        primary_key=True, default_factory=lambda: str(uuid.uuid4()), unique=True
-    )
-    create_ts: Mapped[datetime] = mapped_column(
-        server_default=func.now(), nullable=False, default=datetime.now()
-    )
+    name: str
+    email: str
+    token: str
+    id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
+    create_ts: datetime = Field(default_factory=datetime.now)
 
 
-@reg.mapped_as_dataclass
-class Item:
+class Item(SQLModel, table=True):
     __tablename__ = "items"
-    type_id: Mapped[int] = mapped_column(ForeignKey("dim_item_types.id"))
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    title: Mapped[str] = mapped_column(nullable=False)
-    description: Mapped[str] = mapped_column(nullable=True, default=None)
-    img_location: Mapped[str] = mapped_column(nullable=True, default=None)
-    id: Mapped[str] = mapped_column(
-        primary_key=True, default_factory=lambda: str(uuid.uuid4()), unique=True
-    )
-    is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
-    create_ts: Mapped[datetime] = mapped_column(
-        server_default=func.now(), nullable=False, default=datetime.now()
-    )
+    type_id: ItemTypeId = Field(foreign_key="dim_itemtypes.id")
+    owner_id: UUID4 = Field(foreign_key="users.id")
+    title: constr(min_length=1, max_length=248)
+    description: str | None = None
+    img_location: FileUrl | None = None
+    is_active: bool = True
+    id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
+    create_ts: datetime = Field(default_factory=datetime.now)
 
 
-@reg.mapped_as_dataclass
-class BookDetails:
+class BookDetails(SQLModel, table=True):
     __tablename__ = "books"
-    id: Mapped[int] = mapped_column(ForeignKey("items.id"), primary_key=True)
-    author: Mapped[str] = mapped_column(nullable=True, default=None)
-    publisher: Mapped[str] = mapped_column(nullable=True, default=None)
-    isbn: Mapped[str] = mapped_column(nullable=True, default=None)
-    create_ts: Mapped[datetime] = mapped_column(
-        server_default=func.now(), nullable=False, default=datetime.now()
-    )
+    author: str | None = None
+    publisher: str | None = None
+    isbn: str | None = None
+    id: UUID4 = Field(foreign_key="items.id", primary_key=True)
+    create_ts: datetime = Field(default_factory=datetime.now)
 
 
-@reg.mapped_as_dataclass
-class Vote:
+class Vote(SQLModel, table=True):
     __tablename__ = "votes"
-    item_id: Mapped[int] = mapped_column(ForeignKey("items.id"))
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    id: Mapped[str] = mapped_column(
-        primary_key=True, default_factory=lambda: str(uuid.uuid4()), unique=True
-    )
-    create_ts: Mapped[datetime] = mapped_column(
-        server_default=func.now(), nullable=False, default=datetime.now()
-    )
+    item_id: UUID4 = Field(foreign_key="items.id")
+    user_id: UUID4 = Field(foreign_key="users.id")
+    is_active: bool = True
+    id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
+    create_ts: datetime = Field(default_factory=datetime.now)
+
+
+def initialize_tables(engine):
+    SQLModel.metadata.create_all(engine)
