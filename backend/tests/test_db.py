@@ -6,6 +6,7 @@ from backend.db.users import *
 from backend.db.items import *
 from backend.model import *
 from abc import ABC
+from sqlmodel import Session
 
 
 engine = get_engine()
@@ -140,126 +141,146 @@ class DbTest(ABC):
     def teardown_class(cls):
         drop_all_tables(engine)
 
-    def setup_method(self, method):
+    def setup_method(self, _):
         seed_item_types = generate_item_types()
         seed_users = generate_users()
         seed_items = generate_items()
         seed_votes = generate_votes()
 
-        for items in [seed_item_types, seed_users, seed_items, seed_votes]:
-            add_many(items, engine)
+        with Session(engine) as session:
+            for items in [seed_item_types, seed_users, seed_items, seed_votes]:
+                add_many(items, session)
 
-        assert count(ItemType, engine) == len(seed_item_types)
-        assert count(User, engine) == len(seed_users)
-        assert count(Item, engine) == len(seed_items)
-        assert count(Vote, engine) == len(seed_votes)
+            assert count(ItemType, session) == len(seed_item_types)
+            assert count(User, session) == len(seed_users)
+            assert count(Item, session) == len(seed_items)
+            assert count(Vote, session) == len(seed_votes)
 
-    def teardown_method(self, method):
-        truncate(Vote.__tablename__, engine, cascade=True)
-        truncate(Item.__tablename__, engine, cascade=True)
-        truncate(User.__tablename__, engine, cascade=True)
-        truncate(ItemType.__tablename__, engine, cascade=True)
+    def teardown_method(self, _):
+        with Session(engine) as session:
+            truncate(Vote.__tablename__, session, cascade=True)
+            truncate(Item.__tablename__, session, cascade=True)
+            truncate(User.__tablename__, session, cascade=True)
+            truncate(ItemType.__tablename__, session, cascade=True)
 
-        assert count(Vote, engine) == 0
-        assert count(Item, engine) == 0
-        assert count(ItemType, engine) == 0
-        assert count(User, engine) == 0
+            assert count(Vote, session) == 0
+            assert count(Item, session) == 0
+            assert count(ItemType, session) == 0
+            assert count(User, session) == 0
 
 
 class TestDbVotes(DbTest):
     def test_count_votes(self):
-        assert count_votes(item_ids["Lectures in Physics"], engine) == 2
-        assert count_votes(item_ids["Advanced Dungeons and Dragons"], engine) == 0
-        assert count_votes(item_ids["Introduction to Gamma Convergence"], engine) == 1
-        assert count_votes(item_ids["Connecticut Yankee"], engine) == 0
+        with Session(engine) as session:
+            assert count_votes(item_ids["Lectures in Physics"], session) == 2
+            assert count_votes(item_ids["Advanced Dungeons and Dragons"], session) == 0
+            assert (
+                count_votes(item_ids["Introduction to Gamma Convergence"], session) == 1
+            )
+            assert count_votes(item_ids["Connecticut Yankee"], session) == 0
 
     def test_vote_for(self):
-        vote_for(
-            item_ids["Connecticut Yankee"],
-            user_ids["Mark Twain"],
-            engine,
-        )
-        assert count_votes(item_ids["Connecticut Yankee"], engine) == 1
+        with Session(engine) as session:
+            vote_for(
+                item_ids["Connecticut Yankee"],
+                user_ids["Mark Twain"],
+                session,
+            )
+            assert count_votes(item_ids["Connecticut Yankee"], session) == 1
 
     def test_remove_vote_for(self):
-        remove_vote_for(
-            item_ids["Introduction to Gamma Convergence"],
-            user_ids["Richard Feynman"],
-            engine,
-        )
-        assert count_votes(item_ids["Introduction to Gamma Convergence"], engine) == 0
+        with Session(engine) as session:
+            remove_vote_for(
+                item_ids["Introduction to Gamma Convergence"],
+                user_ids["Richard Feynman"],
+                session,
+            )
+            assert (
+                count_votes(item_ids["Introduction to Gamma Convergence"], session) == 0
+            )
 
     def test_active_votes(self):
-        results = active_votes(engine)
-        assert len(results) == 3
-        for result in results:
-            assert type(result) == Vote
+        with Session(engine) as session:
+            results = active_votes(session)
+            assert len(results) == 3
+            for result in results:
+                assert type(result) == Vote
 
     def test_users_votes(self):
-        user_votes_results = {
-            user_id: users_votes(user_ids[user_id], engine) for user_id in user_ids
-        }
-        assert len(user_votes_results) == len(user_ids)
-        assert len(user_votes_results["Mark Twain"]) == 0
+        with Session(engine) as session:
+            user_votes_results = {
+                user_id: users_votes(user_ids[user_id], session) for user_id in user_ids
+            }
+            assert len(user_votes_results) == len(user_ids)
+            assert len(user_votes_results["Mark Twain"]) == 0
 
     def test_user_voted_items(self):
-        results = user_voted_items(user_ids["Richard Feynman"], engine)
-        assert len(results) == 2
-        for result in results:
-            assert type(result[0]) == Item
-            assert type(result[1]) == User
+        with Session(engine) as session:
+            results = user_voted_items(user_ids["Richard Feynman"], session)
+            assert len(results) == 2
+            for result in results:
+                assert type(result[0]) == Item
+                assert type(result[1]) == User
 
 
 class TestDbUsers(DbTest):
     def test_add_user(self):
-        num_users_start = count_users(engine)
-        add_user("Mary Oliver", "oliver@poets.com", "hij111213", engine)
-        num_users_after = count_users(engine)
-        assert (num_users_after - num_users_start) == 1
+        with Session(engine) as session:
+            num_users_start = count_users(session)
+            add_user("Mary Oliver", "oliver@poets.com", "hij111213", session)
+            num_users_after = count_users(session)
+            assert (num_users_after - num_users_start) == 1
 
     def test_lookup_user_by_email(self):
-        user = lookup_user_by_email("feynman@lanl.gov", engine)
-        assert user.name == "Richard Feynman"
+        with Session(engine) as session:
+            user = lookup_user_by_email("feynman@lanl.gov", session)
+            assert user.name == "Richard Feynman"
 
     def test_lookup_user_exists(self):
-        for user_id in user_ids:
-            assert lookup_user(user_ids[user_id], engine) is not None
-        assert lookup_user(uuid.uuid4(), engine) is None
+        with Session(engine) as session:
+            for user_id in user_ids:
+                assert lookup_user(user_ids[user_id], session) is not None
+            assert lookup_user(uuid.uuid4(), session) is None
 
 
 class TestDbItems(DbTest):
     def test_lookup_item(self):
-        for item_id in item_ids:
-            assert lookup_item(item_ids[item_id], engine) is not None
-        assert lookup_item(uuid.uuid4(), engine) is None
+        with Session(engine) as session:
+            for item_id in item_ids:
+                assert lookup_item(item_ids[item_id], session) is not None
+            assert lookup_item(uuid.uuid4(), session) is None
 
     def test_lookup_user_library(self):
-        for user_id in user_ids:
-            assert len(lookup_user_library(user_ids[user_id], engine)) >= 1
-        assert len(lookup_user_library(uuid.uuid4(), engine)) == 0
+        with Session(engine) as session:
+            for user_id in user_ids:
+                assert len(lookup_user_library(user_ids[user_id], session)) >= 1
+            assert len(lookup_user_library(uuid.uuid4(), session)) == 0
 
     def test_items(self):
-        results = items(engine)
-        assert len(set(item_ids.values())) == 4
-        assert len(results) == 4
-        assert len(set([item.id for (item, _) in results])) == len(item_ids)
+        with Session(engine) as session:
+            results = items(session)
+            assert len(set(item_ids.values())) == 4
+            assert len(results) == 4
+            assert len(set([item.id for (item, _) in results])) == len(item_ids)
 
     def test_items_paginated(self):
-        results_one = items_paginated(2, 0, engine)
-        results_two = items_paginated(2, 2, engine)
-        assert len(results_one) == 2
-        assert len(results_two) == 2
-        assert set([r[0].id for r in results_one]).isdisjoint(
-            set([r[0].id for r in results_two])
-        )
+        with Session(engine) as session:
+            results_one = items_paginated(2, 0, session)
+            results_two = items_paginated(2, 2, session)
+            assert len(results_one) == 2
+            assert len(results_two) == 2
+            assert set([r[0].id for r in results_one]).isdisjoint(
+                set([r[0].id for r in results_two])
+            )
 
     def test_remove_item(self):
-        for item_id in item_ids:
-            assert lookup_item(item_ids[item_id], engine) is not None
+        with Session(engine) as session:
+            for item_id in item_ids:
+                assert lookup_item(item_ids[item_id], session) is not None
 
-        for item_id in item_ids:
-            item = lookup_item(item_ids[item_id], engine)
-            remove_item(item, engine)
+            for item_id in item_ids:
+                item = lookup_item(item_ids[item_id], session)
+                remove_item(item, session)
 
-        for item_id in item_ids:
-            assert lookup_item(item_ids[item_id], engine) is None
+            for item_id in item_ids:
+                assert lookup_item(item_ids[item_id], session) is None

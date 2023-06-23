@@ -1,4 +1,4 @@
-from sqlmodel import Session, create_engine, func, select, text
+from sqlmodel import create_engine, func, select, text
 
 from backend.utils import read_secret
 
@@ -23,32 +23,28 @@ def is_successful(f):
 
 
 @is_successful
-def add_single(item, engine) -> None:
-    with Session(engine) as session:
-        session.add(item)
-        session.commit()
+def add_single(item, session) -> None:
+    session.add(item)
+    session.commit()
 
 
 @is_successful
-def add_many(items, engine) -> None:
-    with Session(engine) as session:
-        session.add_all(items)
-        session.commit()
+def add_many(items, session) -> None:
+    session.add_all(items)
+    session.commit()
 
 
-def count(t, engine) -> int:
-    with Session(engine) as session:
-        return session.exec(select(func.count(t.id))).first()
+def count(t, session) -> int:
+    return session.exec(select(func.count(t.id))).first()
 
 
-def truncate(t, engine, cascade=False):
-    with Session(engine) as session:
-        if cascade:
-            stmt = text(f"TRUNCATE TABLE {t} CASCADE")
-        else:
-            stmt = text(f"TRUNCATE TABLE {t}")
-        session.exec(stmt)
-        session.commit()
+def truncate(t, session, cascade=False):
+    if cascade:
+        stmt = text(f"TRUNCATE TABLE {t} CASCADE")
+    else:
+        stmt = text(f"TRUNCATE TABLE {t}")
+    session.exec(stmt)
+    session.commit()
 
 
 def get_engine(**kwargs):

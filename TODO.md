@@ -15,7 +15,7 @@
 - [X] add user
 - [X] lookup user by email
 - [X] lookup user by id
-- [ ] remove user
+- [/] remove user
 - [X] transition to SQLModel
 - [X] get testing working in docker/eliminate the `dev.py` script
 - [X] docker run to execute test suite
