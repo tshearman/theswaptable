@@ -21,7 +21,7 @@ class ItemType(SQLModel, table=True):
 class User(SQLModel, table=True):
     __tablename__ = "users"
     name: str
-    email: EmailStr
+    email: EmailStr = Field(unique=True)
     token: str
     id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
     create_ts: datetime = Field(default_factory=datetime.now)

@@ -32,15 +32,11 @@ def add_many(items, engine) -> None:
     with Session(engine) as session:
         session.add_all(items)
         session.commit()
-        print(f"WROTE THE THINGS {items}")
 
 
 def count(t, engine) -> int:
     with Session(engine) as session:
-        stmt = select(func.count(t.id))
-        num = session.execute(stmt).one()[0]
-        session.commit()
-        return num
+        return session.exec(select(func.count(t.id))).first()
 
 
 def truncate(t, engine, cascade=False):
@@ -49,5 +45,5 @@ def truncate(t, engine, cascade=False):
             stmt = text(f"TRUNCATE TABLE {t} CASCADE")
         else:
             stmt = text(f"TRUNCATE TABLE {t}")
-        session.execute(stmt)
+        session.exec(stmt)
         session.commit()

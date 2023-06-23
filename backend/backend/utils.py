@@ -7,11 +7,11 @@ def read_secret(secret):
         return f.readline()
 
 
-def get_engine():
+def get_engine(**kwargs):
     host = read_secret("postgres_host")
     port = read_secret("postgres_port")
     db = read_secret("postgres_db")
     user = read_secret("postgres_user")
     pw = read_secret("postgres_password")
     schema = "curios"
-    return generate_engine(host, port, db, user, pw, schema, echo=True)
+    return generate_engine(host, port, db, user, pw, schema, **kwargs)

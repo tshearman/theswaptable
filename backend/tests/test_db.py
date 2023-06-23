@@ -2,9 +2,13 @@ import uuid
 from backend.db.utils import add_many, count, truncate
 from backend.utils import get_engine
 from backend.db.voting import *
-
+from backend.db.users import *
+from backend.db.items import *
 from backend.model import *
+from abc import ABC
 
+
+engine = get_engine()
 
 user_ids = {
     "Richard Feynman": uuid.uuid4(),
@@ -121,15 +125,13 @@ def generate_votes():
     ]
 
 
-class TestDbVoting:
+class DbTest(ABC):
     @classmethod
     def setup_class(cls):
-        engine = get_engine()
         initialize_tables(engine)
 
     @classmethod
     def teardown_class(cls):
-        engine = get_engine()
         drop_all_tables(engine)
 
     def setup_method(self, method):
@@ -137,10 +139,8 @@ class TestDbVoting:
         seed_users = generate_users()
         seed_items = generate_items()
         seed_votes = generate_votes()
-        engine = get_engine()
 
         for items in [seed_item_types, seed_users, seed_items, seed_votes]:
-            print(f"Writing {len(items)} to disk ({items})")
             add_many(items, engine)
 
         assert count(ItemType, engine) == len(seed_item_types)
@@ -149,8 +149,6 @@ class TestDbVoting:
         assert count(Vote, engine) == len(seed_votes)
 
     def teardown_method(self, method):
-        engine = get_engine()
-
         truncate(Vote.__tablename__, engine, cascade=True)
         truncate(Item.__tablename__, engine, cascade=True)
         truncate(User.__tablename__, engine, cascade=True)
@@ -161,27 +159,50 @@ class TestDbVoting:
         assert count(ItemType, engine) == 0
         assert count(User, engine) == 0
 
+
+class TestDbVoting(DbTest):
     def test_count_votes(self):
-        e = get_engine()
-        assert count_votes(item_ids["Lectures in Physics"], e) == 2
-        assert count_votes(item_ids["Advanced Dungeons and Dragons"], e) == 0
-        assert count_votes(item_ids["Introduction to Gamma Convergence"], e) == 1
-        assert count_votes(item_ids["Connecticut Yankee"], e) == 0
+        assert count_votes(item_ids["Lectures in Physics"], engine) == 2
+        assert count_votes(item_ids["Advanced Dungeons and Dragons"], engine) == 0
+        assert count_votes(item_ids["Introduction to Gamma Convergence"], engine) == 1
+        assert count_votes(item_ids["Connecticut Yankee"], engine) == 0
 
     def test_vote_for(self):
-        e = get_engine()
         vote_for(
             item_ids["Connecticut Yankee"],
             user_ids["Mark Twain"],
-            e,
+            engine,
         )
-        assert count_votes(item_ids["Connecticut Yankee"], e) == 1
+        assert count_votes(item_ids["Connecticut Yankee"], engine) == 1
 
     def test_remove_vote_for(self):
-        e = get_engine()
         remove_vote_for(
             item_ids["Introduction to Gamma Convergence"],
             user_ids["Richard Feynman"],
-            e,
+            engine,
         )
-        assert count_votes(item_ids["Introduction to Gamma Convergence"], e) == 0
+        assert count_votes(item_ids["Introduction to Gamma Convergence"], engine) == 0
+
+
+class TestDbUsers(DbTest):
+    def test_add_user(self):
+        num_users_start = count_users(engine)
+        add_user("Mary Oliver", "oliver@poets.com", "hij111213", engine)
+        num_users_after = count_users(engine)
+        assert (num_users_after - num_users_start) == 1
+
+    def test_lookup_user_by_email(self):
+        user = lookup_user_by_email("feynman@lanl.gov", engine)
+        assert user.name == "Richard Feynman"
+
+    def test_lookup_user_exists(self):
+        for user_id in user_ids:
+            assert lookup_user(user_ids[user_id], engine) is not None
+        assert lookup_user(uuid.uuid4(), engine) is None
+
+
+class TestDbItems(DbTest):
+    def test_lookup_item(self):
+        for item_id in item_ids:
+            assert lookup_item(item_ids[item_id], engine) is not None
+        assert lookup_item(uuid.uuid4(), engine) is None
