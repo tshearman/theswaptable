@@ -2,7 +2,7 @@ from datetime import datetime
 import uuid
 from enum import Enum
 from pydantic import UUID4, EmailStr, FileUrl, constr
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, select
 
 
 class ItemTypeId(Enum):
@@ -26,6 +26,23 @@ class User(SQLModel, table=True):
     id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
     create_ts: datetime = Field(default_factory=datetime.now)
 
+    @staticmethod
+    def from_tuple(t):
+        return User(
+            **dict(
+                zip(
+                    (
+                        "name",
+                        "email",
+                        "token",
+                        "id",
+                        "create_ts",
+                    ),
+                    t,
+                )
+            )
+        )
+
 
 class Item(SQLModel, table=True):
     __tablename__ = "items"
@@ -37,6 +54,39 @@ class Item(SQLModel, table=True):
     is_active: bool = True
     id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
     create_ts: datetime = Field(default_factory=datetime.now)
+
+    @staticmethod
+    def from_tuple(t):
+        return Item(
+            **dict(
+                zip(
+                    (
+                        "type_id",
+                        "owner_id",
+                        "title",
+                        "description",
+                        "img_location",
+                        "is_active",
+                        "id",
+                        "create_ts",
+                    ),
+                    t,
+                )
+            )
+        )
+
+    @staticmethod
+    def from_query(inner):
+        return (
+            inner.c.type_id,
+            inner.c.owner_id,
+            inner.c.title,
+            inner.c.description,
+            inner.c.img_location,
+            inner.c.is_active,
+            inner.c.id,
+            inner.c.create_ts,
+        )
 
 
 class BookDetails(SQLModel, table=True):
@@ -55,6 +105,12 @@ class Vote(SQLModel, table=True):
     is_active: bool = True
     id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
     create_ts: datetime = Field(default_factory=datetime.now)
+
+    @staticmethod
+    def from_tuple(t):
+        return Vote(
+            **dict(zip(("item_id", "user_id", "is_active", "id", "create_ts"), t))
+        )
 
 
 def initialize_tables(engine):

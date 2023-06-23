@@ -1,5 +1,7 @@
 from sqlmodel import Session, create_engine, func, select, text
 
+from backend.utils import read_secret
+
 
 def generate_engine(
     host: str, port: int, db: str, user: str, pw: str, schema: str = "curios", **kwargs
@@ -47,3 +49,13 @@ def truncate(t, engine, cascade=False):
             stmt = text(f"TRUNCATE TABLE {t}")
         session.exec(stmt)
         session.commit()
+
+
+def get_engine(**kwargs):
+    host = read_secret("postgres_host")
+    port = read_secret("postgres_port")
+    db = read_secret("postgres_db")
+    user = read_secret("postgres_user")
+    pw = read_secret("postgres_password")
+    schema = "curios"
+    return generate_engine(host, port, db, user, pw, schema, **kwargs)

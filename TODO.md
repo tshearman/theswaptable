@@ -1,20 +1,32 @@
 
 # Backend
-- [ ] get all active items, paginated
-- [ ] get all items associated with a user
-- [ ] get all items a user voted for
-- [/] get an item
-- [ ] add item
-- [ ] remove item 
+- [X] get all active items
+- [X] paginated all items
+- [X] get all items associated with a user
+- [X] get all items a user voted for
+- [X] get an item
+- [X] add item
+- [X] remove item 
 - [X] add vote for an item
 - [X] remove vote for an item
 - [X] count votes for an item
-- [/] add user
+- [X] get all votes
+- [X] get all votes cast by by user
+- [X] add user
+- [X] lookup user by email
+- [X] lookup user by id
 - [ ] remove user
 - [X] transition to SQLModel
 - [X] get testing working in docker/eliminate the `dev.py` script
-- [ ] docker run to execute test suite
+- [X] docker run to execute test suite
 
 # Database
 
+
+# API
+- [ ] Testing?
+
 # Frontend
+
+# Infra
+- [X] Makefile for tests

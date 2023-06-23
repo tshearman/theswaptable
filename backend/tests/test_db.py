@@ -1,6 +1,6 @@
 import uuid
 from backend.db.utils import add_many, count, truncate
-from backend.utils import get_engine
+from backend.db.utils import get_engine
 from backend.db.voting import *
 from backend.db.users import *
 from backend.db.items import *
@@ -110,7 +110,7 @@ def generate_votes():
         Vote(
             item_id=item_ids["Advanced Dungeons and Dragons"],
             user_id=user_ids["Richard Feynman"],
-            create_ts=datetime(2023, 1, 1, 2, 0, 0, 0),
+            create_ts=datetime(2023, 1, 1, 1, 0, 0, 0),
         ),
         Vote(
             item_id=item_ids["Introduction to Gamma Convergence"],
@@ -121,6 +121,12 @@ def generate_votes():
             item_id=item_ids["Introduction to Gamma Convergence"],
             user_id=user_ids["Richard Feynman"],
             create_ts=datetime(2023, 1, 1, 2, 0, 0, 0),
+        ),
+        Vote(
+            item_id=item_ids["Introduction to Gamma Convergence"],
+            user_id=user_ids["Mark Twain"],
+            create_ts=datetime(2023, 1, 1, 2, 0, 0, 0),
+            is_active=False,
         ),
     ]
 
@@ -160,7 +166,7 @@ class DbTest(ABC):
         assert count(User, engine) == 0
 
 
-class TestDbVoting(DbTest):
+class TestDbVotes(DbTest):
     def test_count_votes(self):
         assert count_votes(item_ids["Lectures in Physics"], engine) == 2
         assert count_votes(item_ids["Advanced Dungeons and Dragons"], engine) == 0
@@ -182,6 +188,26 @@ class TestDbVoting(DbTest):
             engine,
         )
         assert count_votes(item_ids["Introduction to Gamma Convergence"], engine) == 0
+
+    def test_active_votes(self):
+        results = active_votes(engine)
+        assert len(results) == 3
+        for result in results:
+            assert type(result) == Vote
+
+    def test_users_votes(self):
+        user_votes_results = {
+            user_id: users_votes(user_ids[user_id], engine) for user_id in user_ids
+        }
+        assert len(user_votes_results) == len(user_ids)
+        assert len(user_votes_results["Mark Twain"]) == 0
+
+    def test_user_voted_items(self):
+        results = user_voted_items(user_ids["Richard Feynman"], engine)
+        assert len(results) == 2
+        for result in results:
+            assert type(result[0]) == Item
+            assert type(result[1]) == User
 
 
 class TestDbUsers(DbTest):
@@ -206,3 +232,34 @@ class TestDbItems(DbTest):
         for item_id in item_ids:
             assert lookup_item(item_ids[item_id], engine) is not None
         assert lookup_item(uuid.uuid4(), engine) is None
+
+    def test_lookup_user_library(self):
+        for user_id in user_ids:
+            assert len(lookup_user_library(user_ids[user_id], engine)) >= 1
+        assert len(lookup_user_library(uuid.uuid4(), engine)) == 0
+
+    def test_items(self):
+        results = items(engine)
+        assert len(set(item_ids.values())) == 4
+        assert len(results) == 4
+        assert len(set([item.id for (item, _) in results])) == len(item_ids)
+
+    def test_items_paginated(self):
+        results_one = items_paginated(2, 0, engine)
+        results_two = items_paginated(2, 2, engine)
+        assert len(results_one) == 2
+        assert len(results_two) == 2
+        assert set([r[0].id for r in results_one]).isdisjoint(
+            set([r[0].id for r in results_two])
+        )
+
+    def test_remove_item(self):
+        for item_id in item_ids:
+            assert lookup_item(item_ids[item_id], engine) is not None
+
+        for item_id in item_ids:
+            item = lookup_item(item_ids[item_id], engine)
+            remove_item(item, engine)
+
+        for item_id in item_ids:
+            assert lookup_item(item_ids[item_id], engine) is None
