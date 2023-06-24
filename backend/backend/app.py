@@ -4,7 +4,7 @@ from backend.utils import or404
 from backend.db.users import lookup_user
 from backend.model import Item, Vote, User
 from backend.db.items import lookup_item, remove_item
-from backend.db.voting import unvote
+from backend.db.voting import vote, unvote
 from backend.db.mixed import count_votes
 from backend.db.utils import get_engine, add_single
 from pydantic import UUID4
@@ -54,13 +54,18 @@ async def read_votes(item_id: UUID4):
         return or404("item")(count_votes)(item_id, session)
 
 
-@app.post("/vote/")
-async def cast_vote(vote: Vote):
-    with Session(engine) as session:
-        return add_single(vote, session)
+@app.post("/vote/{item_id}/{user_id}", response_model=Vote)
+async def cast_vote(item_id: UUID4, user_id: UUID4):
+    await read_item(item_id)
+    await read_user(user_id)
+    with Session(engine, expire_on_commit=False) as session:
+        v = Vote(item_id=item_id, user_id=user_id)
+        response = vote(v, session)
+        session.commit()
+        return response
 
 
 @app.delete("/vote/")
-async def remove_vote(vote: Vote):
+async def remove_vote(v: Vote):
     with Session(engine) as session:
-        return unvote(vote, session)
+        return unvote(v, session)

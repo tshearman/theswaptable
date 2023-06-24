@@ -8,7 +8,6 @@ from tests.utils import DbTest
 
 
 class TestDbVotes(DbTest):
-
     def test_active_votes(self):
         with Session(self.engine) as session:
             results = active_votes(session)
