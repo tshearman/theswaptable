@@ -1,4 +1,5 @@
-from sqlmodel import create_engine, func, select, text
+from sqlmodel import Session, create_engine, func, select, text
+from backend.model import Item
 
 from backend.utils import read_secret
 
@@ -14,31 +15,23 @@ def generate_engine(
     )
 
 
-def is_successful(f):
-    def f_star(*args, **kwargs):
-        f(*args, **kwargs)
-        return True
-
-    return f_star
-
-
-@is_successful
-def add_single(item, session) -> None:
-    session.add(item)
+def add_single(v, session: Session):
+    session.add(v)
     session.commit()
+    return v
 
 
-@is_successful
-def add_many(items, session) -> None:
-    session.add_all(items)
+def add_many(vs, session: Session):
+    session.add_all(vs)
     session.commit()
+    return vs
 
 
-def count(t, session) -> int:
+def count(t, session: Session) -> int:
     return session.exec(select(func.count(t.id))).first()
 
 
-def truncate(t, session, cascade=False):
+def truncate(t, session: Session, cascade: bool = False):
     if cascade:
         stmt = text(f"TRUNCATE TABLE {t} CASCADE")
     else:

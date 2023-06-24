@@ -181,7 +181,7 @@ class TestDbVotes(DbTest):
 
     def test_vote_for(self):
         with Session(engine) as session:
-            vote_for(
+            vote(
                 item_ids["Connecticut Yankee"],
                 user_ids["Mark Twain"],
                 session,
@@ -190,11 +190,11 @@ class TestDbVotes(DbTest):
 
     def test_remove_vote_for(self):
         with Session(engine) as session:
-            remove_vote_for(
-                item_ids["Introduction to Gamma Convergence"],
-                user_ids["Richard Feynman"],
-                session,
+            vote = Vote(
+                item_id=item_ids["Introduction to Gamma Convergence"],
+                user_id=user_ids["Richard Feynman"],
             )
+            unvote(vote, session)
             assert (
                 count_votes(item_ids["Introduction to Gamma Convergence"], session) == 0
             )

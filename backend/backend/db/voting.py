@@ -1,6 +1,6 @@
 from backend.model import Vote
 from backend.db.utils import add_single
-from sqlmodel import select, func, and_
+from sqlmodel import Session, select, func, and_
 from pydantic import UUID4
 
 
@@ -10,12 +10,12 @@ def update_vote(item_id: UUID4, user_id: UUID4, session, is_active=True):
     )
 
 
-def vote_for(item_id: UUID4, user_id: UUID4, session):
+def vote(item_id: UUID4, user_id: UUID4, session):
     return update_vote(item_id, user_id, session)
 
 
-def remove_vote_for(item_id: UUID4, user_id: UUID4, session):
-    return update_vote(item_id, user_id, session, is_active=False)
+def unvote(vote: Vote, session):
+    return update_vote(vote.item_id, vote.user_id, session, is_active=False)
 
 
 def active_votes_query(session):

@@ -12,6 +12,7 @@ psycopg2-binary = "^2.9.6"
 uuid = "^1.30"
 sqlmodel = "^0.0.8"
 pydantic = {extras = ["email"], version = "^1.10.9"}
+httpx = "^0.24.1"
 
 [tool.poetry.dev-dependencies]
 black = "^23.3.0"

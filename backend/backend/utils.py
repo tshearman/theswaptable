@@ -8,14 +8,13 @@ def read_secret(secret):
         return f.readline()
 
 
-def or404(type_, engine, **session_kwargs):
+def or404(type_):
     def decorated(func):
         def inner(*args, **kwargs):
-            response = with_session(engine, **session_kwargs)(func)(*args, **kwargs)
+            response = func(*args, **kwargs)
             if response is None:
-                raise HTTPException(
-                    status_code=404, detail=f"{type_.capitalize()} not found."
-                )
+                detail = f"{type_.capitalize()} not found."
+                raise HTTPException(status_code=404, detail=detail)
             return response
 
         return inner
@@ -28,7 +27,6 @@ def with_session(engine, **kwargs):
         def inner(*args, **kwargs):
             with Session(engine, **kwargs) as session:
                 response = func(*args, **kwargs, session=session)
-                session.commit()
                 return response
 
         return inner
