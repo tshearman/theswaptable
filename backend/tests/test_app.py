@@ -1,13 +1,7 @@
 from fastapi.testclient import TestClient
 from backend.app import app
-from backend.model import Vote
-from backend.db.utils import add_single
-from backend.model import Item, ItemTypeId
 from uuid import uuid4
 from tests.utils import DbTest
-from backend.utils import with_session
-from backend.db.items import lookup_item
-import json
 
 
 class TestApi(DbTest):
@@ -28,6 +22,16 @@ class TestApi(DbTest):
 
     def test_get_user_nonexisting(self):
         response = self.client.get(f"/user/{uuid4()}")
+        assert response.status_code == 404
+
+    def test_get_votes(self):
+        for item_id in self.item_ids:
+            response = self.client.get(f"/vote/{self.item_ids[item_id]}")
+            assert response.status_code == 200
+            assert response.json() >= 0
+
+    def test_get_votes_nonexistent_item(self):
+        response = self.client.get(f"/vote/{uuid4()}")
         assert response.status_code == 404
 
     # def test_add_item(self):

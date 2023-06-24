@@ -1,4 +1,3 @@
-from sqlmodel import Session
 from fastapi import HTTPException
 
 
@@ -16,18 +15,6 @@ def or404(type_):
                 detail = f"{type_.capitalize()} not found."
                 raise HTTPException(status_code=404, detail=detail)
             return response
-
-        return inner
-
-    return decorated
-
-
-def with_session(engine, **kwargs):
-    def decorated(func):
-        def inner(*args, **kwargs):
-            with Session(engine, **kwargs) as session:
-                response = func(*args, **kwargs, session=session)
-                return response
 
         return inner
 

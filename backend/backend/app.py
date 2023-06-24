@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from sqlmodel import Session
-from backend.utils import or404, with_session
+from backend.utils import or404
 from backend.db.users import lookup_user
 from backend.model import Item, Vote, User
 from backend.db.items import lookup_item, remove_item
-from backend.db.voting import count_votes, unvote
+from backend.db.voting import unvote
+from backend.db.mixed import count_votes
 from backend.db.utils import get_engine, add_single
 from pydantic import UUID4
 
@@ -38,7 +39,7 @@ async def remove_item_(item: Item) -> Item:
 @app.get("/user/{user_id}", response_model=User | None)
 async def read_user(user_id: UUID4) -> User | None:
     with Session(engine) as session:
-        return or404("User")(lookup_user)(user_id, session)
+        return or404("user")(lookup_user)(user_id, session)
 
 
 @app.post("/user/")
@@ -48,9 +49,9 @@ async def add_user(user: User):
 
 
 @app.get("/vote/{item_id}")
-async def read_votes(item_id: UUID4) -> int:
+async def read_votes(item_id: UUID4):
     with Session(engine) as session:
-        return count_votes(item_id, session)
+        return or404("item")(count_votes)(item_id, session)
 
 
 @app.post("/vote/")

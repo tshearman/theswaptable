@@ -2,7 +2,6 @@ from pydantic import UUID4, constr, FileUrl
 from sqlmodel import select, func, and_
 from backend.db.utils import add_single
 from backend.model import Item, User, ItemTypeId
-from backend.db.voting import users_votes_query
 
 
 def add_item(
@@ -67,15 +66,6 @@ def items_paginated(limit: int, offset: int, session) -> list[(Item, User)]:
 
 def lookup_user_library(user_id: UUID4, session) -> list[Item]:
     return session.exec(select(Item).where(Item.owner_id == user_id)).all()
-
-
-def user_voted_items(user_id: UUID4, session) -> list[(Item, User)]:
-    user_votes = users_votes_query(user_id, session)
-    return session.exec(
-        select(Item, User)
-        .join(User)
-        .join(user_votes, onclause=Item.id == user_votes.c.item_id)
-    ).all()
 
 
 def active_items_query(session):

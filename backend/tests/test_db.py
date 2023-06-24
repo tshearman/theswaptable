@@ -1,6 +1,6 @@
 import uuid
-from backend.db.utils import add_many, count, truncate
-from backend.db.utils import get_engine
+from backend.db.utils import add_many, count, truncate, get_engine
+from backend.db.mixed import *
 from backend.db.voting import *
 from backend.db.users import *
 from backend.db.items import *
@@ -150,6 +150,7 @@ class DbTest(ABC):
         with Session(engine) as session:
             for items in [seed_item_types, seed_users, seed_items, seed_votes]:
                 add_many(items, session)
+                session.commit()
 
             assert count(ItemType, session) == len(seed_item_types)
             assert count(User, session) == len(seed_users)
@@ -181,20 +182,22 @@ class TestDbVotes(DbTest):
 
     def test_vote_for(self):
         with Session(engine) as session:
+            v = Vote(
+                item_id=item_ids["Connecticut Yankee"], user_id=user_ids["Mark Twain"]
+            )
             vote(
-                item_ids["Connecticut Yankee"],
-                user_ids["Mark Twain"],
+                v,
                 session,
             )
             assert count_votes(item_ids["Connecticut Yankee"], session) == 1
 
     def test_remove_vote_for(self):
         with Session(engine) as session:
-            vote = Vote(
+            v = Vote(
                 item_id=item_ids["Introduction to Gamma Convergence"],
                 user_id=user_ids["Richard Feynman"],
             )
-            unvote(vote, session)
+            unvote(v, session)
             assert (
                 count_votes(item_ids["Introduction to Gamma Convergence"], session) == 0
             )

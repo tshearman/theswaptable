@@ -1,5 +1,4 @@
 from sqlmodel import Session, create_engine, func, select, text
-from backend.model import Item
 
 from backend.utils import read_secret
 
@@ -17,13 +16,11 @@ def generate_engine(
 
 def add_single(v, session: Session):
     session.add(v)
-    session.commit()
     return v
 
 
 def add_many(vs, session: Session):
     session.add_all(vs)
-    session.commit()
     return vs
 
 

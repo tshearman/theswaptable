@@ -4,21 +4,16 @@ from sqlmodel import Session, select, func, and_
 from pydantic import UUID4
 
 
-def update_vote(item_id: UUID4, user_id: UUID4, session, is_active=True):
-    return add_single(
-        Vote(item_id=item_id, user_id=user_id, is_active=is_active), session
-    )
+def vote(vote: Vote, session: Session):
+    return add_single(vote, session)
 
 
-def vote(item_id: UUID4, user_id: UUID4, session):
-    return update_vote(item_id, user_id, session)
+def unvote(vote: Vote, session: Session):
+    vote_updated = Vote(item_id=vote.item_id, user_id=vote.user_id, is_active=False)
+    return add_single(vote_updated, session)
 
 
-def unvote(vote: Vote, session):
-    return update_vote(vote.item_id, vote.user_id, session, is_active=False)
-
-
-def active_votes_query(session):
+def active_votes_query(session: Session):
     rank = (
         func.rank()
         .over(
@@ -43,23 +38,16 @@ def active_votes_query(session):
     )
 
 
-def active_votes(session) -> list[Vote]:
+def active_votes(session: Session) -> list[Vote]:
     results = session.query(active_votes_query(session)).all()
     return list(map(Vote.from_tuple, results))
 
 
-def users_votes_query(user_id: UUID4, session):
+def users_votes_query(user_id: UUID4, session: Session):
     active_votes_ = active_votes_query(session)
     return select(active_votes_).where(active_votes_.c.user_id == user_id).subquery()
 
 
-def users_votes(user_id: UUID4, session) -> list[Vote]:
+def users_votes(user_id: UUID4, session: Session) -> list[Vote]:
     results = session.query(users_votes_query(user_id, session)).all()
     return list(map(Vote.from_tuple, results))
-
-
-def count_votes(item_id: UUID4, session):
-    active_votes_ = active_votes_query(session)
-    return session.query(
-        select(active_votes_).where(active_votes_.c.item_id == item_id).subquery()
-    ).count()
