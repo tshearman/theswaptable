@@ -24,7 +24,15 @@
 
 
 # API
-- [ ] Testing?
+- [ ] Testing
+    - [ ] get votes for item
+    - [ ] get item
+    - [ ] get user
+    - [ ] delete vote
+    - [ ] delete item
+    - [ ] post item
+    - [ ] post vote
+    - [ ] post user
 
 # Frontend
 

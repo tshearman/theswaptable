@@ -1,2 +1,8 @@
 test:
-	docker compose down && docker compose build && docker compose run api pytest && docker compose rm -f
+	docker compose build
+	docker compose run --rm api pytest
+	docker compose down
+	docker container prune -f
+	docker image prune -f
+	docker volume prune -f
+
