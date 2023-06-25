@@ -45,3 +45,9 @@ def get_engine(**kwargs):
     pw = read_secret("postgres_password")
     schema = "curios"
     return generate_engine(host, port, db, user, pw, schema, **kwargs)
+
+
+def get_google_search_app():
+    search_app = read_secret("google_search_app")
+    token = read_secret("google_search_token")
+    return search_app, token

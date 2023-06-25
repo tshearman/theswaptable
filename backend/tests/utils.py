@@ -29,6 +29,52 @@ class DbTest(ABC):
             "Connecticut Yankee": uuid4(),
         }
 
+    def generate_vote_dicts(self, item_ids, user_ids):
+        self.vote_dicts = [
+            {
+                "item_id": item_ids["Lectures in Physics"],
+                "user_id": user_ids["Richard Feynman"],
+                "create_ts": datetime(2023, 1, 1, 2, 30, 0, 0),
+            },
+            {
+                "item_id": item_ids["Lectures in Physics"],
+                "user_id": user_ids["Gary Gygax"],
+                "create_ts": datetime(2023, 1, 1, 1, 30, 0, 0),
+            },
+            {
+                "item_id": item_ids["Lectures in Physics"],
+                "user_id": user_ids["Gary Gygax"],
+                "create_ts": datetime(2023, 1, 1, 1, 0, 0, 0),
+            },
+            {
+                "item_id": item_ids["Advanced Dungeons and Dragons"],
+                "user_id": user_ids["Richard Feynman"],
+                "create_ts": datetime(2023, 1, 1, 2, 30, 0, 0),
+                "is_active": False,
+            },
+            {
+                "item_id": item_ids["Advanced Dungeons and Dragons"],
+                "user_id": user_ids["Richard Feynman"],
+                "create_ts": datetime(2023, 1, 1, 1, 0, 0, 0),
+            },
+            {
+                "item_id": item_ids["Introduction to Gamma Convergence"],
+                "user_id": user_ids["Richard Feynman"],
+                "create_ts": datetime(2023, 1, 1, 2, 0, 0, 0),
+            },
+            {
+                "item_id": item_ids["Introduction to Gamma Convergence"],
+                "user_id": user_ids["Richard Feynman"],
+                "create_ts": datetime(2023, 1, 1, 2, 0, 0, 0),
+            },
+            {
+                "item_id": item_ids["Introduction to Gamma Convergence"],
+                "user_id": user_ids["Mark Twain"],
+                "create_ts": datetime(2023, 1, 1, 2, 0, 0, 0),
+                "is_active": False,
+            },
+        ]
+
     def generate_item_types(self):
         self.item_types = [
             ItemType(id=ItemTypeId.GENERIC, lookup_table="items"),
@@ -86,51 +132,8 @@ class DbTest(ABC):
             ),
         ]
 
-    def generate_votes(self, item_ids, user_ids):
-        self.votes = [
-            Vote(
-                item_id=item_ids["Lectures in Physics"],
-                user_id=user_ids["Richard Feynman"],
-                create_ts=datetime(2023, 1, 1, 2, 30, 0, 0),
-            ),
-            Vote(
-                item_id=item_ids["Lectures in Physics"],
-                user_id=user_ids["Gary Gygax"],
-                create_ts=datetime(2023, 1, 1, 1, 30, 0, 0),
-            ),
-            Vote(
-                item_id=item_ids["Lectures in Physics"],
-                user_id=user_ids["Gary Gygax"],
-                create_ts=datetime(2023, 1, 1, 1, 0, 0, 0),
-            ),
-            Vote(
-                item_id=item_ids["Advanced Dungeons and Dragons"],
-                user_id=user_ids["Richard Feynman"],
-                create_ts=datetime(2023, 1, 1, 2, 30, 0, 0),
-                is_active=False,
-            ),
-            Vote(
-                item_id=item_ids["Advanced Dungeons and Dragons"],
-                user_id=user_ids["Richard Feynman"],
-                create_ts=datetime(2023, 1, 1, 1, 0, 0, 0),
-            ),
-            Vote(
-                item_id=item_ids["Introduction to Gamma Convergence"],
-                user_id=user_ids["Richard Feynman"],
-                create_ts=datetime(2023, 1, 1, 2, 0, 0, 0),
-            ),
-            Vote(
-                item_id=item_ids["Introduction to Gamma Convergence"],
-                user_id=user_ids["Richard Feynman"],
-                create_ts=datetime(2023, 1, 1, 2, 0, 0, 0),
-            ),
-            Vote(
-                item_id=item_ids["Introduction to Gamma Convergence"],
-                user_id=user_ids["Mark Twain"],
-                create_ts=datetime(2023, 1, 1, 2, 0, 0, 0),
-                is_active=False,
-            ),
-        ]
+    def generate_votes(self):
+        self.votes = list(map(lambda d: Vote(**d), self.vote_dicts))
 
     @classmethod
     def setup_class(cls):
@@ -149,7 +152,8 @@ class DbTest(ABC):
         self.generate_item_types()
         self.generate_users(self.user_ids)
         self.generate_items(self.item_ids, self.user_ids)
-        self.generate_votes(self.item_ids, self.user_ids)
+        self.generate_vote_dicts(self.item_ids, self.user_ids)
+        self.generate_votes()
 
         with Session(self.engine) as session:
             for items in [self.item_types, self.users, self.items, self.votes]:

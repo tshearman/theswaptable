@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from sqlmodel import Session
 
 
 def read_secret(secret):
@@ -17,5 +18,27 @@ def or404(type_):
             return response
 
         return inner
+
+    return decorated
+
+
+def with_session(engine, commit: bool = False, **session_kwargs):
+    def decorated(func):
+        def inner(*args, **kwargs):
+            with Session(engine, **session_kwargs) as session:
+                response = func(*args, session, **kwargs)
+                if commit:
+                    session.commit()
+                return response
+
+        return inner
+
+    return decorated
+
+
+def or404session(engine, type_, commit: bool = False, **session_kwargs):
+    def decorated(func):
+        func_with_session = with_session(engine, commit, **session_kwargs)(func)
+        return or404(type_)(func_with_session)
 
     return decorated

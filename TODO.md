@@ -26,15 +26,16 @@
 # API
 - [ ] Testing
     - [X] get votes for item
-    - [ ] get user votes
+    - [X] get user votes
     - [X] get item
     - [X] get user
-    - [ ] delete vote
-    - [ ] delete item
-    - [ ] post item
+    - [X] delete vote
+    - [X] delete item
+    - [X] post item
     - [X] post vote
-    - [ ] post user
-    - [ ] google image search for book title
+    - [X] post user
+    - [/] post user that exists
+- [ ] google image search for book title
 
 # Frontend
 

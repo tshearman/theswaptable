@@ -13,6 +13,8 @@ services:
       - postgres_db
       - postgres_host
       - postgres_port
+      - google_search_app
+      - google_search_token
 
   db:
     image: "postgres:15"
@@ -39,3 +41,7 @@ secrets:
     file: ./secrets/postgres_host
   postgres_port:
     file: ./secrets/postgres_port
+  google_search_app:
+    file: ./secrets/google_search_app
+  google_search_token:
+    file: ./secrets/google_search_token
