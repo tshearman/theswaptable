@@ -1,7 +1,4 @@
-from backend.db.voting import (
-    vote,
-    unvote,
-)
+from backend.db.votes import post_vote, delete_vote
 from backend.model import Vote
 from sqlmodel import Session
 from tests.utils import DbTest
@@ -28,7 +25,7 @@ class TestDbMixed(DbTest):
                 item_id=self.item_ids["Connecticut Yankee"],
                 user_id=self.user_ids["Mark Twain"],
             )
-            vote(v, session)
+            post_vote(v, session)
             assert count_votes(self.item_ids["Connecticut Yankee"], session) == 1
 
     def test_remove_vote_for(self):
@@ -37,7 +34,7 @@ class TestDbMixed(DbTest):
                 item_id=self.item_ids["Introduction to Gamma Convergence"],
                 user_id=self.user_ids["Richard Feynman"],
             )
-            unvote(v, session)
+            delete_vote(v, session)
             assert (
                 count_votes(self.item_ids["Introduction to Gamma Convergence"], session)
                 == 0

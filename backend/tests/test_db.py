@@ -1,7 +1,7 @@
 import uuid
 from backend.db.utils import add_many, count, truncate, get_engine
 from backend.db.mixed import *
-from backend.db.voting import *
+from backend.db.votes import *
 from backend.db.users import *
 from backend.db.items import *
 from backend.model import *
@@ -185,7 +185,7 @@ class TestDbVotes(DbTest):
             v = Vote(
                 item_id=item_ids["Connecticut Yankee"], user_id=user_ids["Mark Twain"]
             )
-            vote(
+            post_vote(
                 v,
                 session,
             )
@@ -197,7 +197,7 @@ class TestDbVotes(DbTest):
                 item_id=item_ids["Introduction to Gamma Convergence"],
                 user_id=user_ids["Richard Feynman"],
             )
-            unvote(v, session)
+            delete_vote(v, session)
             assert (
                 count_votes(item_ids["Introduction to Gamma Convergence"], session) == 0
             )
@@ -242,16 +242,16 @@ class TestDbUsers(DbTest):
     def test_lookup_user_exists(self):
         with Session(engine) as session:
             for user_id in user_ids:
-                assert lookup_user(user_ids[user_id], session) is not None
-            assert lookup_user(uuid.uuid4(), session) is None
+                assert get_user(user_ids[user_id], session) is not None
+            assert get_user(uuid.uuid4(), session) is None
 
 
 class TestDbItems(DbTest):
     def test_lookup_item(self):
         with Session(engine) as session:
             for item_id in item_ids:
-                assert lookup_item(item_ids[item_id], session) is not None
-            assert lookup_item(uuid.uuid4(), session) is None
+                assert get_item(item_ids[item_id], session) is not None
+            assert get_item(uuid.uuid4(), session) is None
 
     def test_lookup_user_library(self):
         with Session(engine) as session:
@@ -279,11 +279,11 @@ class TestDbItems(DbTest):
     def test_remove_item(self):
         with Session(engine) as session:
             for item_id in item_ids:
-                assert lookup_item(item_ids[item_id], session) is not None
+                assert get_item(item_ids[item_id], session) is not None
 
             for item_id in item_ids:
-                item = lookup_item(item_ids[item_id], session)
-                remove_item(item, session)
+                item = get_item(item_ids[item_id], session)
+                delete_item(item, session)
 
             for item_id in item_ids:
-                assert lookup_item(item_ids[item_id], session) is None
+                assert get_item(item_ids[item_id], session) is None

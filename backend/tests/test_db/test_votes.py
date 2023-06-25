@@ -1,4 +1,4 @@
-from backend.db.voting import (
+from backend.db.votes import (
     active_votes,
     users_votes,
 )

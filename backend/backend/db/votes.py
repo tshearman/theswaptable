@@ -4,11 +4,11 @@ from sqlmodel import Session, select, func, and_
 from pydantic import UUID4
 
 
-def vote(vote: Vote, session: Session):
+def post_vote(vote: Vote, session: Session):
     return add_single(vote, session)
 
 
-def unvote(vote: Vote, session: Session):
+def delete_vote(vote: Vote, session: Session):
     vote_updated = Vote(item_id=vote.item_id, user_id=vote.user_id, is_active=False)
     return add_single(vote_updated, session)
 

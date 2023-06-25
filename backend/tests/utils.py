@@ -1,7 +1,7 @@
 from uuid import uuid4
 from backend.db.utils import add_many, count, truncate
 from backend.db.utils import get_engine
-from backend.db.voting import *
+from backend.db.votes import *
 from backend.db.users import *
 from backend.db.items import *
 from backend.model import *

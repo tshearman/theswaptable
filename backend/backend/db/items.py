@@ -22,14 +22,14 @@ def add_item(
     add_single(item, session)
 
 
-def remove_item(item: Item, session):
+def delete_item(item: Item, session):
     the_item = session.exec(select(Item).where(Item.id == item.id)).one()
     the_item.is_active = False
     session.add(the_item)
     session.commit()
 
 
-def lookup_item(item_id: UUID4, session) -> Item | None:
+def get_item(item_id: UUID4, session) -> Item | None:
     inner = active_items_query(session)
     result = session.exec(
         select(*Item.from_query(inner)).where(inner.c.id == item_id)

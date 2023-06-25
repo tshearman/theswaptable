@@ -1,5 +1,5 @@
-from backend.db.items import lookup_item
-from backend.db.voting import users_votes_query, active_votes_query
+from backend.db.items import get_item
+from backend.db.votes import users_votes_query, active_votes_query
 from pydantic import UUID4
 from sqlmodel import select, Session
 from backend.model import Item, User
@@ -15,7 +15,7 @@ def user_voted_items(user_id: UUID4, session: Session) -> list[(Item, User)]:
 
 
 def count_votes(item_id: UUID4, session: Session) -> int | None:
-    if lookup_item(item_id, session) is None:
+    if get_item(item_id, session) is None:
         return None
     active_votes_ = active_votes_query(session)
     return session.query(

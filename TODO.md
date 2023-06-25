@@ -34,6 +34,7 @@
     - [ ] post item
     - [X] post vote
     - [ ] post user
+    - [ ] google image search for book title
 
 # Frontend
 

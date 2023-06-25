@@ -8,7 +8,7 @@ def add_user(name: str, email: EmailStr, token: str, session: Session) -> User:
     return add_single(User(name=name, email=email, token=token), session)
 
 
-def lookup_user(id: UUID4, session: Session) -> User | None:
+def get_user(id: UUID4, session: Session) -> User | None:
     return session.exec(select(User).where(User.id == id)).first()
 
 
