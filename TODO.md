@@ -35,7 +35,7 @@
     - [X] post vote
     - [X] post user
     - [/] post user that exists
-- [ ] google image search for book title
+- [X] google image search for book title
 
 # Frontend
 
