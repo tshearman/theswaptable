@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 services:
 
   api:
@@ -11,6 +11,7 @@ services:
       - postgres_user
       - postgres_password
       - postgres_db
+      - postgres_curios_schema
       - postgres_host
       - postgres_port
       - google_search_app
@@ -45,3 +46,6 @@ secrets:
     file: ./secrets/google_search_app
   google_search_token:
     file: ./secrets/google_search_token
+  postgres_curios_schema:
+    file: ./secrets/postgres_curios_schema
+

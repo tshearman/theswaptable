@@ -1,12 +1,17 @@
 from uuid import uuid4
-from backend.db.utils import add_many, count, truncate
+from backend.db.utils import count, truncate
 from backend.db.utils import get_engine
-from backend.db.votes import *
-from backend.db.users import *
-from backend.db.items import *
-from backend.model import *
+from backend.model import (
+    ItemType,
+    ItemTypeId,
+    User,
+    Vote,
+    Item,
+    drop_all_tables,
+    initialize_tables,
+)
 from abc import ABC
-from sqlmodel import Session
+from sqlmodel import Session, true
 
 
 class DbTest(ABC):
@@ -19,6 +24,7 @@ class DbTest(ABC):
             "Richard Feynman": uuid4(),
             "Gary Gygax": uuid4(),
             "Mark Twain": uuid4(),
+            "Bertrand Russell": uuid4(),
         }
 
     def generate_item_ids(self):
@@ -34,52 +40,30 @@ class DbTest(ABC):
             {
                 "item_id": item_ids["Lectures in Physics"],
                 "user_id": user_ids["Richard Feynman"],
-                "create_ts": datetime(2023, 1, 1, 2, 30, 0, 0),
             },
             {
                 "item_id": item_ids["Lectures in Physics"],
                 "user_id": user_ids["Gary Gygax"],
-                "create_ts": datetime(2023, 1, 1, 1, 30, 0, 0),
-            },
-            {
-                "item_id": item_ids["Lectures in Physics"],
-                "user_id": user_ids["Gary Gygax"],
-                "create_ts": datetime(2023, 1, 1, 1, 0, 0, 0),
             },
             {
                 "item_id": item_ids["Advanced Dungeons and Dragons"],
                 "user_id": user_ids["Richard Feynman"],
-                "create_ts": datetime(2023, 1, 1, 2, 30, 0, 0),
-                "is_active": False,
-            },
-            {
-                "item_id": item_ids["Advanced Dungeons and Dragons"],
-                "user_id": user_ids["Richard Feynman"],
-                "create_ts": datetime(2023, 1, 1, 1, 0, 0, 0),
             },
             {
                 "item_id": item_ids["Introduction to Gamma Convergence"],
                 "user_id": user_ids["Richard Feynman"],
-                "create_ts": datetime(2023, 1, 1, 2, 0, 0, 0),
-            },
-            {
-                "item_id": item_ids["Introduction to Gamma Convergence"],
-                "user_id": user_ids["Richard Feynman"],
-                "create_ts": datetime(2023, 1, 1, 2, 0, 0, 0),
             },
             {
                 "item_id": item_ids["Introduction to Gamma Convergence"],
                 "user_id": user_ids["Mark Twain"],
-                "create_ts": datetime(2023, 1, 1, 2, 0, 0, 0),
-                "is_active": False,
             },
         ]
 
     def generate_item_types(self):
         self.item_types = [
-            ItemType(id=ItemTypeId.GENERIC, lookup_table="items"),
-            ItemType(id=ItemTypeId.BOOK, lookup_table="books"),
-            ItemType(id=ItemTypeId.MODEL, lookup_table="models"),
+            ItemType(id=ItemTypeId.GENERIC),
+            ItemType(id=ItemTypeId.BOOK),
+            ItemType(id=ItemTypeId.MODEL),
         ]
 
     def generate_users(self, user_ids):
@@ -88,19 +72,21 @@ class DbTest(ABC):
                 id=user_ids["Richard Feynman"],
                 name="Richard Feynman",
                 email="feynman@lanl.gov",
-                token="abc123",
             ),
             User(
                 id=user_ids["Gary Gygax"],
                 name="Gary Gygax",
                 email="gygax@tsr.com",
-                token="def456",
             ),
             User(
                 id=user_ids["Mark Twain"],
                 name="Mark Twain",
                 email="twain@steam.com",
-                token="fgh789",
+            ),
+            User(
+                id=user_ids["Bertrand Russell"],
+                name="Bertrand Russell",
+                email="russell@trin.cam.ac.uk",
             ),
         ]
 
@@ -129,6 +115,7 @@ class DbTest(ABC):
                 type_id=ItemTypeId.BOOK,
                 owner_id=user_ids["Mark Twain"],
                 title="Connecticut Yankee",
+                is_available=False,
             ),
         ]
 
@@ -147,6 +134,7 @@ class DbTest(ABC):
 
     def setup_method(self, _):
         self.engine = DbTest.generate_engine()
+        self.session = Session(self.engine)
         self.generate_item_ids()
         self.generate_user_ids()
         self.generate_item_types()
@@ -155,27 +143,32 @@ class DbTest(ABC):
         self.generate_vote_dicts(self.item_ids, self.user_ids)
         self.generate_votes()
 
-        with Session(self.engine) as session:
-            for items in [self.item_types, self.users, self.items, self.votes]:
-                add_many(items, session)
-                session.commit()
+        def add_many(vs, session: Session):
+            session.add_all(vs)
+            return vs
 
-        with Session(self.engine) as session:
-            assert count(ItemType, session) == len(self.item_types)
-            assert count(User, session) == len(self.users)
-            assert count(Item, session) == len(self.items)
-            assert count(Vote, session) == len(self.votes)
+        # with Session(self.engine) as session:
+        for items in [self.item_types, self.users, self.items, self.votes]:
+            add_many(items, self.session)
+            self.session.commit()
+
+        # with Session(self.engine) as session:
+        assert count(ItemType)(true)(self.session) == len(self.item_types)
+        assert count(User)(true)(self.session) == len(self.users)
+        assert count(Item)(true)(self.session) == len(self.items)
+        assert count(Vote)(true)(self.session) == len(self.votes)
 
     def teardown_method(self, _):
-        with Session(self.engine) as session:
-            truncate(Vote.__tablename__, session, cascade=True)
-            truncate(Item.__tablename__, session, cascade=True)
-            truncate(User.__tablename__, session, cascade=True)
-            truncate(ItemType.__tablename__, session, cascade=True)
-            session.commit()
+        # with Session(self.engine) as session:
+        truncate(Vote, self.session, cascade=True)
+        truncate(Item, self.session, cascade=True)
+        truncate(User, self.session, cascade=True)
+        truncate(ItemType, self.session, cascade=True)
+        self.session.commit()
 
-        with Session(self.engine) as session:
-            assert count(Vote, session) == 0
-            assert count(Item, session) == 0
-            assert count(ItemType, session) == 0
-            assert count(User, session) == 0
+        # with Session(self.engine) as session:
+        assert count(Vote)(true)(self.session) == 0
+        assert count(Item)(true)(self.session) == 0
+        assert count(ItemType)(true)(self.session) == 0
+        assert count(User)(true)(self.session) == 0
+        self.session.close()

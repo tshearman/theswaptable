@@ -2,7 +2,7 @@ from datetime import datetime
 import uuid
 from enum import Enum
 from pydantic import UUID4, EmailStr, FileUrl, constr
-from sqlmodel import Field, SQLModel, select
+from sqlmodel import Field, SQLModel, Relationship
 
 
 class ItemTypeId(Enum):
@@ -13,7 +13,6 @@ class ItemTypeId(Enum):
 
 class ItemType(SQLModel, table=True):
     __tablename__ = "dim_itemtypes"
-    lookup_table: str
     id: ItemTypeId = Field(default=ItemTypeId.GENERIC, primary_key=True)
     create_ts: datetime = Field(default_factory=datetime.now)
 
@@ -22,26 +21,11 @@ class User(SQLModel, table=True):
     __tablename__ = "users"
     name: str
     email: EmailStr = Field(unique=True)
-    token: str
+    auth_token: str | None = Field(unique=True, default=None)
     id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
+    is_hidden: bool = False
     create_ts: datetime = Field(default_factory=datetime.now)
-
-    @staticmethod
-    def from_tuple(t):
-        return User(
-            **dict(
-                zip(
-                    (
-                        "name",
-                        "email",
-                        "token",
-                        "id",
-                        "create_ts",
-                    ),
-                    t,
-                )
-            )
-        )
+    update_ts: datetime = Field(default_factory=datetime.now)
 
 
 class Item(SQLModel, table=True):
@@ -49,68 +33,50 @@ class Item(SQLModel, table=True):
     type_id: ItemTypeId = Field(foreign_key="dim_itemtypes.id")
     owner_id: UUID4 = Field(foreign_key="users.id")
     title: constr(min_length=1, max_length=248)
-    description: str | None = None
-    img_location: FileUrl | None = None
-    is_active: bool = True
-    id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
-    create_ts: datetime = Field(default_factory=datetime.now)
-
-    @staticmethod
-    def from_tuple(t):
-        return Item(
-            **dict(
-                zip(
-                    (
-                        "type_id",
-                        "owner_id",
-                        "title",
-                        "description",
-                        "img_location",
-                        "is_active",
-                        "id",
-                        "create_ts",
-                    ),
-                    t,
-                )
-            )
-        )
-
-    @staticmethod
-    def from_query(inner):
-        return (
-            inner.c.type_id,
-            inner.c.owner_id,
-            inner.c.title,
-            inner.c.description,
-            inner.c.img_location,
-            inner.c.is_active,
-            inner.c.id,
-            inner.c.create_ts,
-        )
-
-
-class BookDetails(SQLModel, table=True):
-    __tablename__ = "books"
+    is_available: bool = True
+    is_hidden: bool = False
     author: str | None = None
     publisher: str | None = None
     isbn: str | None = None
-    id: UUID4 = Field(foreign_key="items.id", primary_key=True)
+    description: str | None = None
+    img_location: FileUrl | None = None
+    votes: list["Vote"] = Relationship(sa_relationship_kwargs={"cascade": "delete"})
+    id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
     create_ts: datetime = Field(default_factory=datetime.now)
+    update_ts: datetime = Field(default_factory=datetime.now)
 
 
 class Vote(SQLModel, table=True):
     __tablename__ = "votes"
     item_id: UUID4 = Field(foreign_key="items.id")
     user_id: UUID4 = Field(foreign_key="users.id")
-    is_active: bool = True
     id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
     create_ts: datetime = Field(default_factory=datetime.now)
+    update_ts: datetime = Field(default_factory=datetime.now)
 
-    @staticmethod
-    def from_tuple(t):
-        return Vote(
-            **dict(zip(("item_id", "user_id", "is_active", "id", "create_ts"), t))
-        )
+
+class Review(SQLModel, table=True):
+    __tablename__ = "reviews"
+    item_id: UUID4 = Field(foreign_key="items.id")
+    user_id: UUID4 = Field(foreign_key="users.id")
+    review: str
+    id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
+    create_ts: datetime = Field(default_factory=datetime.now)
+    update_ts: datetime = Field(default_factory=datetime.now)
+
+
+class LendState(Enum):
+    REQUESTED = 0
+    BORROWED = 1
+    RETURNED = 2
+
+
+class Lend(SQLModel, table=True):
+    __tablename__ = "lends"
+    item_id: UUID4 = Field(foreign_key="items.id")
+    borrower_id: UUID4 = Field(foreign_key="users.id")
+    state: LendState
+    id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
 
 
 def initialize_tables(engine):
