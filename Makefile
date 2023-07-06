@@ -18,6 +18,8 @@ pytest/full:
 down: 
 	docker compose down
 
+lint:
+	black .
 
 dev: build up down clean
 
@@ -30,3 +32,5 @@ t: test
 tf: test-full
 
 d: dev
+
+l: lint
