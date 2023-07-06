@@ -21,7 +21,7 @@ down:
 lint:
 	black .
 
-dev: build up down clean
+dev: clean build up down clean
 
 test: build pytest down clean
 

@@ -17,6 +17,11 @@ services:
       - google_search_app
       - google_search_token
 
+  frontend:
+    build: ./frontend/
+    ports:
+      - "3000:3000"
+
   db:
     image: "postgres:15"
     container_name: "postgres"
