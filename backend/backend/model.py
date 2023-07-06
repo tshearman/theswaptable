@@ -21,11 +21,17 @@ class User(SQLModel, table=True):
     __tablename__ = "users"
     name: str
     email: EmailStr = Field(unique=True)
-    auth_token: str | None = Field(unique=True, default=None)
     id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
     is_hidden: bool = False
     create_ts: datetime = Field(default_factory=datetime.now)
     update_ts: datetime = Field(default_factory=datetime.now)
+
+
+class UserAuth(SQLModel, table=True):
+    __tablename__ = "user_auth"
+    user_id: UUID4 = Field(foreign_key="users.id")
+    id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
+    token: str | None = None
 
 
 class Item(SQLModel, table=True):
@@ -67,7 +73,7 @@ class Review(SQLModel, table=True):
 
 class LendState(Enum):
     REQUESTED = 0
-    BORROWED = 1
+    ON_LOAN = 1
     RETURNED = 2
 
 

@@ -3,7 +3,12 @@ from fastapi import HTTPException
 
 
 def image_search(
-    query, key, app, num=5, page=1, site_search: str | None = "www.amazon.com"
+    query: str,
+    key: str,
+    app: str,
+    num: int = 5,
+    page: int = 1,
+    site_search: str | None = "www.amazon.com",
 ):
     params = {
         "cx": app,

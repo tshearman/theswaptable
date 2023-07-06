@@ -1,12 +1,34 @@
 from pydantic import UUID4
-from sqlmodel import and_, not_, true, Session
+from sqlmodel import and_, not_, true, Session, false
 from backend.model import Item
 from backend.db import utils
 
 
 @utils.all(Item)
+def read_conditional(*, available: bool | None = True, hidden: bool | None = False):
+    if available is None and hidden is None:
+        return false
+    if available is None and hidden:
+        return Item.is_hidden
+    if available is None and not hidden:
+        return not_(Item.is_hidden)
+    if available and hidden is None:
+        return Item.is_available
+    if available and hidden:
+        return and_(Item.is_available, Item.is_hidden)
+    if available and not hidden:
+        return and_(Item.is_available, not_(Item.is_hidden))
+    if not available and hidden is None:
+        return not_(Item.is_available)
+    if not available and hidden:
+        return and_(not_(Item.is_available), Item.is_hidden)
+    if not available and not hidden:
+        return and_(not_(Item.is_available), not_(Item.is_hidden))
+
+
+@utils.all(Item)
 def read_all():
-    return true()
+    return true
 
 
 @utils.first(Item)
@@ -17,6 +39,11 @@ def read(*, id: UUID4):
 @utils.all(Item)
 def read_available():
     return Item.is_available
+
+
+@utils.all(Item)
+def read_unavailable():
+    return not_(Item.is_available)
 
 
 @utils.all(Item)

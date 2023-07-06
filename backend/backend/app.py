@@ -1,12 +1,27 @@
 from fastapi import FastAPI
+from pydantic import UUID4
+from sqlmodel import Session
 
 from backend.external import goog
 from backend.db.utils import get_engine, get_google_search_app
-
+from backend.db import user, item, vote
+from backend.model import *
+from devsetup import setup, teardown
 
 app = FastAPI()
 engine = get_engine()
 google_app, google_token = get_google_search_app()
+
+
+@app.on_event("startup")
+def startup():
+    setup(engine)
+
+
+@app.on_event("shutdown")
+def shutdown():
+    with Session(engine) as session:
+        teardown(session)
 
 
 @app.get("/")
@@ -14,68 +29,82 @@ async def root():
     return {"message": "Hello World"}
 
 
-# @app.put("/item/")
-# async def create_item(item: Item):
-#     # Ensure that the associated user exists
-#     await get_user(item.owner_id)
-
-#     return with_session(engine, commit=True)(add_single)(item)
+@app.get("/users/")
+async def read_users() -> list[User]:
+    with Session(engine) as session:
+        return user.read_all(session)
 
 
-# @app.get("/item/{item_id}", response_model=Item)
-# async def get_item(item_id: UUID4) -> Item | None:
-#     return or404session(engine, "item")(items.get_item)(item_id)
+@app.get("/user/{id}")
+async def read_user(id: UUID4) -> User:
+    with Session(engine) as session:
+        return user.read(session, id=id)
 
 
-# @app.post("/item/", response_model=Item)
-# async def post_item(item: Item):
-#     await get_user(item.owner_id)
-#     return with_session(engine, commit=True, expire_on_commit=False)(add_single)(item)
+@app.delete("/user/{id}")
+async def delete_user(id: UUID4) -> User:
+    with Session(engine) as session:
+        return user.delete(session, id=id)
 
 
-# @app.delete("/item/", response_model=Item)
-# async def delete_item(item: Item) -> Item:
-#     return with_session(engine)(items.delete_item)(item)
+@app.put("/users/")
+async def create_user(u: User) -> User:
+    with Session(engine) as session:
+        return user.create(session, user=u)
 
 
-# @app.get("/user/{user_id}", response_model=User | None)
-# async def get_user(user_id: UUID4) -> User | None:
-#     return or404session(engine, "user")(users.get_user)(user_id)
+@app.get("/items/")
+async def read_items(
+    available: bool | None = True, hidden: bool | None = False
+) -> list[Item]:
+    with Session(engine) as session:
+        return item.read_conditional(session, available=available, hidden=hidden)
 
 
-# @app.post("/user/")
-# async def add_user(user: User):
-#     return with_session(engine, commit=True)(add_single)(user)
+@app.get("/item/{id}")
+async def read_item(id: UUID4) -> Item:
+    with Session(engine) as session:
+        return item.read(session, id=id)
 
 
-# @app.get("/vote/{item_id}")
-# async def get_item_vote_count(item_id: UUID4):
-#     return or404session(engine, "item")(mixed.count_votes)(item_id)
+@app.put("/item/")
+async def create_item(i: Item) -> Item:
+    with Session(engine, expire_on_commit=False) as session:
+        return item.create(session, item=i)
 
 
-# @app.get("/items/voted-by/{user_id}")
-# async def get_user_votes(user_id: UUID4) -> list[Item]:
-#     await get_user(user_id)
-#     items = with_session(engine)(mixed.user_voted_items)(user_id)
-#     return [item[0] for item in items]
+@app.delete("/item/{id}")
+async def delete_item(id: UUID4) -> Item:
+    with Session(engine) as session:
+        item.delete(session, id=id)
 
 
-# @app.post("/vote/{item_id}/{user_id}", response_model=Vote)
-# async def post_vote(item_id: UUID4, user_id: UUID4):
-#     vote = Vote(item_id=item_id, user_id=user_id)
-#     await get_item(item_id)
-#     await get_user(user_id)
-#     return with_session(engine, commit=True, expire_on_commit=False)(votes.post_vote)(
-#         vote
-#     )
+@app.put("/vote/")
+async def create_vote(v: Vote) -> Vote:
+    with Session(engine) as session:
+        vote.create(session, vote=v)
 
 
-# @app.delete("/vote/{item_id}/{user_id}")
-# async def delete_vote(item_id: UUID4, user_id: UUID4):
-#     vote = Vote(item_id=item_id, user_id=user_id)
-#     return with_session(engine, commit=True)(votes.delete_vote)(vote)
+@app.delete("/vote/{user_id}/{item_id}")
+async def delete_vote(user_id: UUID4, item_id: UUID4) -> Vote:
+    with Session(engine) as session:
+        v = vote.read_by_user_and_item(session, user_id=user_id, item_id=item_id)
+        return vote.delete(session, id=v.id)
+
+
+@app.get("/item-votes/{id}")
+async def count_item_votes(id: UUID4) -> int:
+    with Session(engine) as session:
+        return vote.count_votes_by_item_id(session, item_id=id)
+
+
+@app.get("/items/voted-for-by/{id}")
+async def read_user_votes(id: UUID4) -> list[Item]:
+    with Session(engine) as session:
+        vs: list[Vote] = vote.read_votes_by_user_id(session, user_id=id)
+        return [item.read(session, id=v.item_id) for v in vs]
 
 
 @app.get("/ext-images/")
-async def get_image_recommendations(query, num=5, page=1):
+async def get_image_recommendations(query: str, num: int = 5, page: int = 1):
     return goog.image_search(query, google_token, google_app, num=num, page=page)
