@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+
 from pydantic import UUID4
 from sqlmodel import Session
 
@@ -39,6 +40,12 @@ async def read_users() -> list[User]:
 async def read_user(id: UUID4) -> User:
     with Session(engine) as session:
         return user.read(session, id=id)
+    
+
+@app.get("/library/user/{id}")
+async def read_user_library(id: UUID4) -> list[Item]:
+     with Session(engine) as session:
+        return item.read_user_library_by_user_id(session, user_id=id)
 
 
 @app.delete("/user/{id}")
