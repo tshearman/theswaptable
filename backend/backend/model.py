@@ -41,11 +41,12 @@ class Item(SQLModel, table=True):
     title: constr(min_length=1, max_length=248)
     is_available: bool = True
     is_hidden: bool = False
+    is_new: bool = False
     author: str | None = None
     publisher: str | None = None
     isbn: str | None = None
     description: str | None = None
-    img_location: FileUrl | None = None
+    img_location: str = None
     votes: list["Vote"] = Relationship(sa_relationship_kwargs={"cascade": "delete"})
     id: UUID4 = Field(primary_key=True, default_factory=uuid.uuid4)
     create_ts: datetime = Field(default_factory=datetime.now)

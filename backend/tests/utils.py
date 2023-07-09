@@ -31,7 +31,7 @@ class DbTest(ABC):
         self.item_ids = {
             "Lectures in Physics": uuid4(),
             "Advanced Dungeons and Dragons": uuid4(),
-            "Introduction to Gamma Convergence": uuid4(),
+            "Gamma Convergence for Beginners": uuid4(),
             "Connecticut Yankee": uuid4(),
         }
 
@@ -50,11 +50,11 @@ class DbTest(ABC):
                 "user_id": user_ids["Richard Feynman"],
             },
             {
-                "item_id": item_ids["Introduction to Gamma Convergence"],
+                "item_id": item_ids["Gamma Convergence for Beginners"],
                 "user_id": user_ids["Richard Feynman"],
             },
             {
-                "item_id": item_ids["Introduction to Gamma Convergence"],
+                "item_id": item_ids["Gamma Convergence for Beginners"],
                 "user_id": user_ids["Mark Twain"],
             },
         ]
@@ -97,18 +97,21 @@ class DbTest(ABC):
                 type_id=ItemTypeId.BOOK,
                 owner_id=user_ids["Richard Feynman"],
                 title="Lectures in Physics",
+                img_location="https://m.media-amazon.com/images/I/81m7QsFdp5L._AC_UF1000,1000_QL80_.jpg",
             ),
             Item(
                 id=item_ids["Advanced Dungeons and Dragons"],
                 type_id=ItemTypeId.BOOK,
                 owner_id=user_ids["Gary Gygax"],
                 title="Advanced Dungeons and Dragons",
+                img_location="https://m.media-amazon.com/images/I/A1iyMzLoadL._AC_UF1000,1000_QL80_.jpg",
             ),
             Item(
-                id=item_ids["Introduction to Gamma Convergence"],
+                id=item_ids["Gamma Convergence for Beginners"],
                 type_id=ItemTypeId.BOOK,
                 owner_id=user_ids["Richard Feynman"],
-                title="Introduction to Gamma Convergence",
+                title="Gamma Convergence for Beginners",
+                img_location="https://m.media-amazon.com/images/I/51fJxkKmlHL._AC_UF1000,1000_QL80_.jpg",
             ),
             Item(
                 id=item_ids["Connecticut Yankee"],
@@ -116,6 +119,7 @@ class DbTest(ABC):
                 owner_id=user_ids["Mark Twain"],
                 title="Connecticut Yankee",
                 is_available=False,
+                img_location="https://m.media-amazon.com/images/I/51FfDxASpWL.jpg",
             ),
         ]
 
