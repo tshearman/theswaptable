@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlmodel import Session, create_engine, func as f, select, text
 from pydantic import UUID4
 
-from backend.utils import read_secret
+from backend.utils import read_config, read_secret
 
 
 def all(t):
@@ -105,16 +105,16 @@ def generate_engine(
 
 
 def get_engine(**kwargs):
-    host = read_secret("postgres_host")
-    port = read_secret("postgres_port")
-    db = read_secret("postgres_db")
+    host = read_config("postgres_host")
+    port = read_config("postgres_port")
+    db = read_config("postgres_db")
     user = read_secret("postgres_user")
     pw = read_secret("postgres_password")
-    schema = read_secret("postgres_curios_schema")
+    schema = read_config("postgres_schema")
     return generate_engine(host, port, db, user, pw, schema, **kwargs)
 
 
 def get_google_search_app():
-    search_app = read_secret("google_search_app")
+    search_app = read_config("google_search_app")
     token = read_secret("google_search_token")
     return search_app, token

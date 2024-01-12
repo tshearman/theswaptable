@@ -7,14 +7,11 @@ services:
       - "8000:8000"
     depends_on:
       - 'db'
+    volumes:
+      - ./config:/run/config
     secrets:
       - postgres_user
       - postgres_password
-      - postgres_db
-      - postgres_curios_schema
-      - postgres_host
-      - postgres_port
-      - google_search_app
       - google_search_token
 
   frontend:
@@ -31,12 +28,16 @@ services:
   db:
     image: "postgres:15"
     container_name: "postgres"
+    restart: always
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER_FILE: /run/secrets/postgres_user
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
       POSTGRES_DB_FILE: /run/secrets/postgres_db
     volumes:
       - ./postgres/initialize.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./config:/run/config
     secrets:
       - postgres_user
       - postgres_password
@@ -47,16 +48,7 @@ secrets:
     file: ./secrets/postgres_user
   postgres_password:
     file: ./secrets/postgres_password
-  postgres_db:
-    file: ./secrets/postgres_db
-  postgres_host:
-    file: ./secrets/postgres_host
-  postgres_port:
-    file: ./secrets/postgres_port
-  google_search_app:
-    file: ./secrets/google_search_app
   google_search_token:
     file: ./secrets/google_search_token
-  postgres_curios_schema:
-    file: ./secrets/postgres_curios_schema
-
+  postgres_db:
+    file: ./config/postgres_db
