@@ -7,11 +7,38 @@ services:
     restart: always
     ports:
       - "5431:80"
+    depends_on:
+      - 'postgres'
     environment:
       PGADMIN_DEFAULT_EMAIL: me@theswaptable.com
       PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/postgres_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
     secrets:
       - postgres_password
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 27016:8081
+    depends_on:
+      - 'mongo'
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+
+  mongo:
+    ports:
+      - '27017:27017'
+
+  postgres:
+    ports:
+      - "5432:5432"
+
+  backend:
+    ports:
+      - "8000:8000"
 
 secrets:
   postgres_password:
