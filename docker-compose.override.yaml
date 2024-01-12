@@ -1,0 +1,18 @@
+version: "3.7"
+services:
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    restart: always
+    ports:
+      - "5431:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: me@theswaptable.com
+      PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password

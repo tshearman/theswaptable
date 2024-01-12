@@ -2,11 +2,15 @@ from fastapi import HTTPException
 from sqlmodel import Session
 
 
-def read_secret(secret):
-    file_name = f"/run/secrets/{secret}"
-    with open(file_name, "r") as f:
-        return f.readline()
+def read_config(value):
+    return read_from_file(f"/run/config/{value}")
 
+def read_secret(secret):
+    return read_from_file(f"/run/secrets/{secret}")
+
+def read_from_file(filepath):
+    with open(filepath, "r") as f:
+        return f.readline()
 
 def or404(type_):
     def decorated(func):

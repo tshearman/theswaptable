@@ -1,3 +1,2 @@
 -- Create item schema
-CREATE SCHEMA IF NOT EXISTS curios;
-
+CREATE SCHEMA IF NOT EXISTS theswaptable;
