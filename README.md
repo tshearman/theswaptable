@@ -4,6 +4,7 @@
     - `yarn install`
 2. Docker compose up
     - `docker-compose up`
+3. Visit `http://localhost:3000/gallery`
 
 # Testing
 1. Unsure... need to figure out again and write down the directions
