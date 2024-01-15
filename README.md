@@ -2,9 +2,15 @@
 1. Install frontend:
     - `cd frontend`
     - `yarn install`
-2. Docker compose up
+2. Generate the secrets directory:
+    - `./secrets`
+3. Generate the secrets files:
+    - `./secrets/google_search_token` with a single line of content `efgh` for example
+    - `./secrets/postgres_password` with a single line of content `1234` for example
+    - `./secrets/postgres_user` with a single line of content `abcd` for example
+4. Docker compose up
     - `docker-compose up`
-3. Visit `http://localhost:3000/gallery`
+5. Visit `http://localhost:3000/gallery`
 
 # Testing
 1. Unsure... need to figure out again and write down the directions
