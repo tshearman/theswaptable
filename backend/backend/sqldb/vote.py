@@ -1,5 +1,6 @@
 from pydantic import UUID4
 from sqlmodel import Session, and_
+
 from backend.model import Vote
 from backend.sqldb import utils
 

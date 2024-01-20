@@ -1,7 +1,8 @@
-from datetime import datetime
 import uuid
+from datetime import datetime
 from enum import Enum
-from pydantic import UUID4, EmailStr, FileUrl, constr
+
+from pydantic import UUID4, EmailStr, constr
 from sqlmodel import Field, SQLModel, Relationship
 
 

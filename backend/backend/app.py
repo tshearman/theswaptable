@@ -1,12 +1,11 @@
 from fastapi import FastAPI
-
 from sqlmodel import Session
 
-from backend.external import goog
-from backend.sqldb.utils import get_engine, get_google_search_app
-from backend.sqldb import user, item, vote
-from backend.model import *
 from backend.devsetup import setup, teardown
+from backend.external import goog
+from backend.model import *
+from backend.sqldb import user, item, vote
+from backend.sqldb.utils import get_engine, get_google_search_app
 
 app = FastAPI()
 engine = get_engine()

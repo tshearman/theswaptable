@@ -1,5 +1,6 @@
-import numpy
 from uuid import uuid4
+
+import numpy
 
 from backend.model import *
 
