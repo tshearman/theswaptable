@@ -1,7 +1,9 @@
+from abc import ABC
 from uuid import uuid4
-from backend.sqldb.utils import count, truncate
-from backend.sqldb.utils import get_engine
-from backend.model import (
+
+from sqlmodel import Session, true
+
+from backend.sqldb.model import (
     ItemType,
     ItemTypeId,
     User,
@@ -10,8 +12,8 @@ from backend.model import (
     drop_all_tables,
     initialize_tables,
 )
-from abc import ABC
-from sqlmodel import Session, true
+from backend.sqldb.utils import count, truncate
+from backend.sqldb.utils import get_engine
 
 
 class DbTest(ABC):

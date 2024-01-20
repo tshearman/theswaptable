@@ -6,7 +6,7 @@ services:
     depends_on:
       - 'postgres'
     volumes:
-      - ./config:/run/config
+      - ./config/prod:/run/config
     secrets:
       - postgres_user
       - postgres_password
@@ -48,10 +48,10 @@ services:
 
 secrets:
   postgres_user:
-    file: ./secrets/postgres_user
+    file: ./secrets/prod/postgres_user
   postgres_password:
-    file: ./secrets/postgres_password
+    file: ./secrets/prod/postgres_password
   google_search_token:
-    file: ./secrets/google_search_token
+    file: ./secrets/prod/google_search_token
   postgres_db:
-    file: ./config/postgres_db
+    file: ./config/prod/postgres_db

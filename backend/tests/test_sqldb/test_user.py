@@ -1,6 +1,7 @@
+from uuid import uuid4
+
 from backend.sqldb import user
 from tests.utils import DbTest
-from uuid import uuid4
 
 
 class TestDbUsers(DbTest):

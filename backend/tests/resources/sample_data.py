@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import numpy
 
-from backend.model import *
+from backend.model import User, Item, Vote, BOOK, MODEL
 
 user_ids = {
     "Richard Feynman": uuid4(),
@@ -10,7 +10,6 @@ user_ids = {
     "Mark Twain": uuid4(),
     "Bertrand Russell": uuid4(),
 }
-
 
 item_ids = {
     "Lectures in Physics": uuid4(),
@@ -50,11 +49,6 @@ item_imgs = {
     "Planet Apocalypse for 5th edition DnD": "https://d1vzi28wh99zvq.cloudfront.net/images/13031/380038.jpg",
 }
 
-item_types = [
-    ItemType(id=ItemTypeId.GENERIC),
-    ItemType(id=ItemTypeId.BOOK),
-    ItemType(id=ItemTypeId.MODEL),
-]
 
 users = [
     User(
@@ -79,18 +73,19 @@ users = [
     ),
 ]
 
+item_types = [BOOK, MODEL]
+
 items = [
     Item(
         id=item_ids[i],
-        type_id=ItemTypeId.BOOK,
-        owner_id=users[0].id,
+        type_=item_types[n % len(item_types)],
+        owner_id=users[n % len(users)].id,
         title=i,
         img_location=item_imgs[i],
         is_available=numpy.random.choice([True, False], p=[0.8, 0.2]),
         is_hidden=numpy.random.choice([True, False], p=[0.2, 0.8]),
-        is_new=numpy.random.choice([True, False], p=[0.1, 0.9]),
     )
-    for i in item_ids
+    for n, i in enumerate(item_ids)
 ]
 
 
@@ -116,11 +111,3 @@ votes = [
         user_id=user_ids["Mark Twain"],
     ),
 ]
-
-
-def setup(client):
-    pass
-
-
-def teardown(client):
-    pass

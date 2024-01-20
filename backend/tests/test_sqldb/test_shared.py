@@ -1,5 +1,5 @@
-from tests.utils import DbTest
 from backend.sqldb import shared
+from tests.utils import DbTest
 
 
 class TestDbMixed(DbTest):

@@ -1,7 +1,8 @@
 from uuid import uuid4
+
 from backend.sqldb import item
+from backend.sqldb.model import Item, ItemTypeId
 from tests.utils import DbTest
-from backend.model import Item, ItemTypeId
 
 
 class TestDbItem(DbTest):

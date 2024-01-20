@@ -20,7 +20,7 @@ services:
     image: mongo-express
     restart: always
     ports:
-      - 27016:8081
+      - "27016:8081"
     depends_on:
       - 'mongo'
     environment:
@@ -30,16 +30,29 @@ services:
 
   mongo:
     ports:
-      - '27017:27017'
+      - "27017:27017"
 
   postgres:
     ports:
       - "5432:5432"
 
   backend:
+    depends_on:
+      - 'mongo'
+    volumes:
+      - ./config/dev:/run/config
+      - ./backend/tests/dev_mongo_initialize.py:/app/dev/dev_mongo_initialize.py
+      - ./backend/tests/resources:/app/dev/resources
     ports:
       - "8000:8000"
+    command: [ "python", "/app/dev/dev_mongo_initialize.py" ]
 
 secrets:
+  postgres_user:
+    file: ./secrets/dev/postgres_user
   postgres_password:
-    file: ./secrets/postgres_password
+    file: ./secrets/dev/postgres_password
+  google_search_token:
+    file: ./secrets/dev/google_search_token
+  postgres_db:
+    file: ./config/dev/postgres_db
