@@ -24,9 +24,13 @@ services:
     depends_on:
       - 'mongo'
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: example
-      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      ME_CONFIG_MONGODB_ADMINUSERNAME_FILE: /run/secrets/mongo_root_user
+      ME_CONFIG_MONGODB_ADMINPASSWORD_FILE: /run/secrets/mongo_root_pw
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+    secrets:
+      - mongo_root_user
+      - mongo_root_pw
 
   mongo:
     ports:
@@ -45,7 +49,13 @@ services:
       - ./backend/tests/resources:/app/dev/resources
     ports:
       - "8000:8000"
-    command: [ "python", "/app/dev/dev_mongo_initialize.py" ]
+
+  mongosetup:
+    build:
+      dockerfile: backend/Dockerfile-devsetup
+    depends_on:
+      - "mongo"
+    restart: no
 
 secrets:
   postgres_user:
@@ -56,3 +66,7 @@ secrets:
     file: ./secrets/dev/google_search_token
   postgres_db:
     file: ./config/dev/postgres_db
+  mongo_root_user:
+    file: ./secrets/dev/mongo_root_user
+  mongo_root_pw:
+    file: ./secrets/dev/mongo_root_pw

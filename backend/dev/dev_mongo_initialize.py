@@ -1,6 +1,6 @@
 import pymongo
 
-from resources.sample_data import items, users
+from dev_data import items, users
 
 
 def setup(client: pymongo.MongoClient):
@@ -8,9 +8,9 @@ def setup(client: pymongo.MongoClient):
     db = client[db_name]
     item_collection = db["items"]
     user_collection = db["users"]
-    item_dicts = [i.dict() for i in items]
+    item_dicts = [i.model_dump() for i in items]
     item_collection.insert_many(item_dicts)
-    user_collection.insert_many([u.dict() for u in users])
+    user_collection.insert_many([u.model_dump() for u in users])
 
 
 def teardown(client: pymongo.MongoClient):
@@ -24,6 +24,9 @@ def teardown(client: pymongo.MongoClient):
 
 if __name__ == "__main__":
     user = "root"
-    pw = "example"
-    client = pymongo.MongoClient(f"mongodb://{user}:{pw}@mongo:27017/")
+    pw = "abcd"
+    port = "27017"
+    client = pymongo.MongoClient(
+        f"mongodb://{user}:{pw}@mongo:{port}/", uuidRepresentation="standard"
+    )
     setup(client)

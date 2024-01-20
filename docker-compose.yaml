@@ -2,7 +2,8 @@ version: "3.7"
 services:
 
   backend:
-    build: ./backend/
+    build:
+      dockerfile: ./backend/Dockerfile
     depends_on:
       - 'postgres'
     volumes:
@@ -43,8 +44,11 @@ services:
     image: mongo
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/mongo_root_user
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo_root_pw
+    secrets:
+      - mongo_root_user
+      - mongo_root_pw
 
 secrets:
   postgres_user:
@@ -55,3 +59,7 @@ secrets:
     file: ./secrets/prod/google_search_token
   postgres_db:
     file: ./config/prod/postgres_db
+  mongo_root_user:
+    file: ./secrets/prod/mongo_root_user
+  mongo_root_pw:
+    file: ./secrets/prod/mongo_root_pw
