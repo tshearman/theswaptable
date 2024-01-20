@@ -1,6 +1,6 @@
 from uuid import uuid4
-from backend.db.utils import count, truncate
-from backend.db.utils import get_engine
+from backend.sqldb.utils import count, truncate
+from backend.sqldb.utils import get_engine
 from backend.model import (
     ItemType,
     ItemTypeId,

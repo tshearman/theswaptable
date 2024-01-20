@@ -1,5 +1,5 @@
 from uuid import uuid4
-from backend.db import item
+from backend.sqldb import item
 from tests.utils import DbTest
 from backend.model import Item, ItemTypeId
 

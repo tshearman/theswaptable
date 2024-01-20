@@ -1,5 +1,5 @@
 from tests.utils import DbTest
-from backend.db import vote
+from backend.sqldb import vote
 from backend.model import Vote
 
 
