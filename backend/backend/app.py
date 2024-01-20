@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 
-from pydantic import UUID4
 from sqlmodel import Session
 
 from backend.external import goog
