@@ -1,4 +1,4 @@
-from backend.db import user
+from backend.sqldb import user
 from tests.utils import DbTest
 from uuid import uuid4
 

@@ -1,9 +1,8 @@
-import numpy
 from uuid import uuid4
 
-from sqlmodel import Session
+import numpy
+
 from backend.model import *
-from backend.db.utils import truncate
 
 user_ids = {
     "Richard Feynman": uuid4(),
@@ -119,23 +118,9 @@ votes = [
 ]
 
 
-def setup(engine):
-    def add_many(vs, session: Session):
-        session.add_all(vs)
-        return vs
-
-    initialize_tables(engine)
-
-    with Session(engine) as session:
-        teardown(session)
-        for values in [item_types, users, items, votes]:
-            add_many(values, session)
-            session.commit()
+def setup(client):
+    pass
 
 
-def teardown(session: Session):
-    truncate(Vote, session, cascade=True)
-    truncate(Item, session, cascade=True)
-    truncate(User, session, cascade=True)
-    truncate(ItemType, session, cascade=True)
-    session.commit()
+def teardown(client):
+    pass

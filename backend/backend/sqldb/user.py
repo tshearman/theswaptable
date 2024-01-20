@@ -1,7 +1,8 @@
 from pydantic import UUID4, EmailStr
-from backend.model import User
-from backend.db import utils
 from sqlmodel import Session, true
+
+from backend.model import User
+from backend.sqldb import utils
 
 
 @utils.all(User)

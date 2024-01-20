@@ -1,13 +1,11 @@
 from fastapi import FastAPI
-
-from pydantic import UUID4
 from sqlmodel import Session
 
+from backend.devsetup import setup, teardown
 from backend.external import goog
-from backend.db.utils import get_engine, get_google_search_app
-from backend.db import user, item, vote
 from backend.model import *
-from devsetup import setup, teardown
+from backend.sqldb import user, item, vote
+from backend.sqldb.utils import get_engine, get_google_search_app
 
 app = FastAPI()
 engine = get_engine()
@@ -40,11 +38,11 @@ async def read_users() -> list[User]:
 async def read_user(id: UUID4) -> User:
     with Session(engine) as session:
         return user.read(session, id=id)
-    
+
 
 @app.get("/library/user/{id}")
 async def read_user_library(id: UUID4) -> list[Item]:
-     with Session(engine) as session:
+    with Session(engine) as session:
         return item.read_user_library_by_user_id(session, user_id=id)
 
 

@@ -1,7 +1,8 @@
 from pydantic import UUID4
 from sqlmodel import Session, and_
+
 from backend.model import Vote
-from backend.db import utils
+from backend.sqldb import utils
 
 
 @utils.first(Vote)

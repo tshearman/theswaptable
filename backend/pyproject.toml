@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "curios.dev-backend"
+name = "backend"
 version = "0.1.0"
-description = "Backend for curios.dev"
+description = "Backend for the swap table"
 authors = ["Toby Shearman <toby.shearman@gmail.com>"]
 
 [tool.poetry.dependencies]
