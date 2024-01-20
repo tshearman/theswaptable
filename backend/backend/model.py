@@ -12,10 +12,6 @@ class User(BaseModel):
     create_ts: datetime = Field(default_factory=datetime.now)
     update_ts: datetime = Field(default_factory=datetime.now)
 
-    # @validator("id")
-    # def validate_uuids(cls, value):
-    #     return str(value)
-
 
 class Item(BaseModel):
     title: str
@@ -28,10 +24,6 @@ class Item(BaseModel):
     is_available: bool = True
     create_ts: datetime = Field(default_factory=datetime.now)
     update_ts: datetime = Field(default_factory=datetime.now)
-
-    # @validator("id", "owner_id")
-    # def validate_uuids(cls, value):
-    #     return str(value)
 
 
 class Vote(BaseModel):
