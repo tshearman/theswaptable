@@ -1,12 +1,13 @@
 from datetime import datetime
 
+from fastapi import HTTPException
 from pydantic import UUID4
 from sqlmodel import Session, create_engine, func as f, select, text
 
 from backend.utils import read_config, read_secret
 
 
-def all(t):
+def all_(t):
     def decorator(func):
         def inner(
             session: Session,
@@ -115,7 +116,37 @@ def get_engine(**kwargs):
     return generate_engine(host, port, db, user, pw, schema, **kwargs)
 
 
-def get_google_search_app():
-    search_app = read_config("google_search_app")
-    token = read_secret("google_search_token")
-    return search_app, token
+def or404(type_):
+    def decorated(func):
+        def inner(*args, **kwargs):
+            response = func(*args, **kwargs)
+            if response is None:
+                detail = f"{type_.capitalize()} not found."
+                raise HTTPException(status_code=404, detail=detail)
+            return response
+
+        return inner
+
+    return decorated
+
+
+def with_session(engine, commit: bool = False, **session_kwargs):
+    def decorated(func):
+        def inner(*args, **kwargs):
+            with Session(engine, **session_kwargs) as session:
+                response = func(*args, session, **kwargs)
+                if commit:
+                    session.commit()
+                return response
+
+        return inner
+
+    return decorated
+
+
+def or404session(engine, type_, commit: bool = False, **session_kwargs):
+    def decorated(func):
+        func_with_session = with_session(engine, commit, **session_kwargs)(func)
+        return or404(type_)(func_with_session)
+
+    return decorated

@@ -1,10 +1,10 @@
-FROM python:3.11
+FROM python:3.12
 RUN mkdir /app 
 RUN mkdir /app/backend
 RUN mkdir /app/tests
-COPY /backend/ /app/backend/
-COPY /tests/ /app/tests/
-COPY pyproject.toml /app
+COPY /backend/backend /app/backend/
+COPY /backend/tests/ /app/tests/
+COPY /backend/pyproject.toml /app
 EXPOSE 8000
 WORKDIR /app
 ENV PYTHONPATH=${PYTHONPATH}:/app:/app/backend

@@ -1,11 +1,11 @@
 from pydantic import UUID4, EmailStr
 from sqlmodel import Session, true
 
-from backend.model import User
 from backend.sqldb import utils
+from backend.sqldb.model import User
 
 
-@utils.all(User)
+@utils.all_(User)
 def read_all():
     return true
 

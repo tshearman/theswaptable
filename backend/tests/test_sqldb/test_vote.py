@@ -1,6 +1,6 @@
-from tests.utils import DbTest
 from backend.sqldb import vote
-from backend.model import Vote
+from backend.sqldb.model import Vote
+from tests.utils import DbTest
 
 
 class TestDbVotes(DbTest):

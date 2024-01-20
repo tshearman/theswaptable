@@ -20,26 +20,53 @@ services:
     image: mongo-express
     restart: always
     ports:
-      - 27016:8081
+      - "27016:8081"
     depends_on:
       - 'mongo'
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: example
-      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      ME_CONFIG_MONGODB_ADMINUSERNAME_FILE: /run/secrets/mongo_root_user
+      ME_CONFIG_MONGODB_ADMINPASSWORD_FILE: /run/secrets/mongo_root_pw
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+    secrets:
+      - mongo_root_user
+      - mongo_root_pw
 
   mongo:
     ports:
-      - '27017:27017'
+      - "27017:27017"
 
   postgres:
     ports:
       - "5432:5432"
 
   backend:
+    depends_on:
+      - 'mongo'
+    volumes:
+      - ./config/dev:/run/config
+      - ./backend/tests/dev_mongo_initialize.py:/app/dev/dev_mongo_initialize.py
+      - ./backend/tests/resources:/app/dev/resources
     ports:
       - "8000:8000"
 
+  mongosetup:
+    build:
+      dockerfile: backend/Dockerfile-devsetup
+    depends_on:
+      - "mongo"
+    restart: no
+
 secrets:
+  postgres_user:
+    file: ./secrets/dev/postgres_user
   postgres_password:
-    file: ./secrets/postgres_password
+    file: ./secrets/dev/postgres_password
+  google_search_token:
+    file: ./secrets/dev/google_search_token
+  postgres_db:
+    file: ./config/dev/postgres_db
+  mongo_root_user:
+    file: ./secrets/dev/mongo_root_user
+  mongo_root_pw:
+    file: ./secrets/dev/mongo_root_pw

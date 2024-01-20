@@ -1,8 +1,8 @@
 from pydantic import UUID4
 from sqlmodel import Session, and_
 
-from backend.model import Vote
 from backend.sqldb import utils
+from backend.sqldb.model import Vote
 
 
 @utils.first(Vote)
@@ -20,12 +20,12 @@ def count_votes_by_item_id(item_id: UUID4):
     return Vote.item_id == item_id
 
 
-@utils.all(Vote)
+@utils.all_(Vote)
 def read_votes_by_item_id(item_id: UUID4):
     return Vote.item_id == item_id
 
 
-@utils.all(Vote)
+@utils.all_(Vote)
 def read_votes_by_user_id(user_id: UUID4):
     return Vote.user_id == user_id
 

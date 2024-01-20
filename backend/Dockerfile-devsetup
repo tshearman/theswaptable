@@ -1,0 +1,12 @@
+FROM python:3.12
+RUN mkdir /app
+RUN mkdir /app/dev
+RUN mkdir /app/backend/
+COPY /backend/dev/ /app/dev/
+COPY /backend/backend/model.py /app/backend/model.py
+COPY /backend/backend/__init__.py /app/backend/__init__.py
+WORKDIR /app
+ENV PYTHONPATH=${PYTHONPATH}:/app:/app/resources
+RUN pip install --no-cache-dir --upgrade pip \
+  && pip install --no-cache-dir -r dev/requirements.txt
+CMD python dev/dev_mongo_initialize.py
